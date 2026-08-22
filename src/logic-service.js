@@ -43,7 +43,7 @@ export class LogicService {
 
   async #connect() {
     this.client = new Client(
-      { name: "studiochat", version: "0.1.0" },
+      { name: "studio-chat", version: "0.1.0" },
       { capabilities: {} }
     );
 

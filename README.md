@@ -1,6 +1,6 @@
-# studiochat
+# studio-chat
 
-studiochat is a macOS desktop chat and control surface for Logic Pro and the
+studio-chat is a macOS desktop creative workspace and studio guide for Logic Pro and the
 Plecat Mood single/album creation process. It connects to the locally
 installed `LogicProMCP` server over stdio and uses the local Codex chat flow to
 turn natural-language requests into Logic Pro actions, creative direction,
@@ -28,7 +28,7 @@ lyrics, visual briefs, and release plans.
 - Accessibility and Automation permissions for LogicProMCP
 - An OpenAI API key
 
-Logic Pro should be open with a project loaded before connecting studiochat.
+Logic Pro should be open with a project loaded before connecting studio-chat.
 
 ## Getting started
 
@@ -64,7 +64,7 @@ the project or application files.
 - `src/settings-store.js` — local settings and secure API-key storage
 - `src/core.js` — tool conversion, result formatting, and approval rules
 - `src/preload.cjs` — restricted renderer bridge
-- `renderer/` — the desktop chat interface
+- `renderer/` — the desktop creative workspace and studio guide interface
 
 The renderer does not receive direct Node.js access. It communicates with the
 main process through the preload bridge, while the main process owns the MCP
@@ -84,7 +84,7 @@ installed separately.
 
 ## Security notes
 
-studiochat keeps the OpenAI API key in Electron secure storage and does not
+studio-chat keeps the OpenAI API key in Electron secure storage and does not
 include it in source control. Higher-risk Logic actions require explicit user
 approval before they are sent to LogicProMCP. Never commit credentials or
 local build artifacts.

@@ -5,10 +5,18 @@ const elements = {
   connectionLabel: $("#connectionLabel"),
   connectionDot: $("#connectionDot"),
   connectButton: $("#connectButton"),
-  messages: $("#messages"),
-  composer: $("#composer"),
-  messageInput: $("#messageInput"),
-  sendButton: $("#sendButton"),
+  singleModeButton: $("#singleModeButton"),
+  albumModeButton: $("#albumModeButton"),
+  workspaceTitle: $("#workspaceTitle"),
+  workspaceSubtitle: $("#workspaceSubtitle"),
+  nextFrameTitle: $("#nextFrameTitle"),
+  moodboardGrid: $("#moodboardGrid"),
+  workspaceImageUpload: $("#workspaceImageUpload"),
+  moodInput: $("#moodInput"),
+  soundInput: $("#soundInput"),
+  worldInput: $("#worldInput"),
+  creativeReadButton: $("#creativeReadButton"),
+  creativeReadOutput: $("#creativeReadOutput"),
   activityPill: $("#activityPill"),
   activityText: $("#activityText"),
   projectBoardButton: $("#projectBoardButton"),
@@ -34,7 +42,6 @@ const elements = {
   reasoningSelect: $("#reasoningSelect"),
   saveSettingsButton: $("#saveSettingsButton"),
   removeKeyButton: $("#removeKeyButton"),
-  newChatButton: $("#newChatButton"),
   approvalModal: $("#approvalModal"),
   approvalTitle: $("#approvalTitle"),
   approvalSummary: $("#approvalSummary"),
@@ -55,26 +62,17 @@ const elements = {
   importBeatButton: $("#importBeatButton")
 };
 
-let sending = false;
 let currentApproval = null;
 let toastTimer;
 let beatMetadata = null;
 let beatFiles = [];
 let selectedBeatPath = "";
 
-const creativePrompts = {
-  single: "Develop one Plecat Mood single. Give me the sonic brief, emotional premise, title options, arrangement arc, lyric direction, cover concept, video treatment, short-form asset list, and the next three Logic steps.",
-  album: "Develop the complete Plecat Mood album world: chapter arc, tracklist, sequencing logic, sonic palette, visual system, anchor artifact, and a practical 90-day rollout.",
-  lyrics: "Write a Plecat Mood lyric direction for a song about absence, return, or someone leaving. Keep it restrained, concrete, cinematic, and emotionally honest; include a verse, pre-chorus, chorus, and bridge seed.",
-  visuals: "Build a Plecat Mood visual brief for the next song: palette, materials, locations, camera language, typography, cover treatment, and music-video treatment.",
-  rollout: "Turn the Plecat Mood 90-day rollout into a concrete release schedule for the next single or album, including assets, captions, platform roles, dependencies, and readiness checks."
-};
-
-const PROJECT_STORAGE_KEY = "studiochat-plecat-project-v1";
+const PROJECT_STORAGE_KEY = "studio-chat-plecat-project-v1";
 let projectState = loadProjectState();
 
 function emptyProjectState() {
-  return { images: [], songs: [], tracklist: [], lyrics: "", songNames: "", ideas: "", updatedAt: new Date().toISOString() };
+  return { images: [], songs: [], tracklist: [], lyrics: "", songNames: "", ideas: "", mode: "single", mood: "", sound: "", world: "", updatedAt: new Date().toISOString() };
 }
 
 function loadProjectState() {
@@ -198,6 +196,43 @@ function renderProjectBoard() {
   elements.projectIdeas.value = projectState.ideas;
 }
 
+function renderMoodboard() {
+  const uploaded = projectState.images.map((image) => {
+    const card = document.createElement("article");
+    card.className = "mood-tile uploaded-tile";
+    const img = document.createElement("img");
+    img.src = image.src;
+    img.alt = image.name || "Uploaded reference";
+    const label = document.createElement("span");
+    label.textContent = image.name || "Untitled reference";
+    card.append(img, label);
+    return card;
+  });
+  const tiles = [...elements.moodboardGrid.querySelectorAll(".mood-tile:not(.uploaded-tile)")];
+  elements.moodboardGrid.replaceChildren(...uploaded, ...tiles);
+  elements.moodInput.value = projectState.mood || "";
+  elements.soundInput.value = projectState.sound || "";
+  elements.worldInput.value = projectState.world || "";
+  $$(".mood-tile[data-mood]").forEach((tile) => tile.addEventListener("click", () => {
+    projectState.mood = tile.dataset.mood;
+    elements.moodInput.value = projectState.mood;
+    saveProjectState();
+  }));
+}
+
+function setCreationMode(mode) {
+  projectState.mode = mode;
+  const album = mode === "album";
+  elements.singleModeButton.classList.toggle("active", !album);
+  elements.albumModeButton.classList.toggle("active", album);
+  elements.workspaceTitle.textContent = album ? "Shape the album world" : "Build the first single";
+  elements.workspaceSubtitle.textContent = album
+    ? "Let the chapters, images, and sonic palette find each other."
+    : "Collect the feeling before you decide the details.";
+  elements.nextFrameTitle.textContent = album ? "Chapter one" : "Cover image";
+  saveProjectState();
+}
+
 function openProjectBoard() {
   renderProjectBoard();
   elements.projectBoardModal.classList.remove("hidden");
@@ -241,28 +276,6 @@ function showToast(message, error = false) {
   toastTimer = setTimeout(() => elements.toast.classList.add("hidden"), 4200);
 }
 
-function removeWelcome() {
-  elements.messages.querySelector(".welcome-card")?.remove();
-}
-
-function appendMessage(role, text) {
-  removeWelcome();
-  const row = document.createElement("article");
-  row.className = `message ${role}`;
-
-  const avatar = document.createElement("div");
-  avatar.className = "avatar";
-  avatar.textContent = role === "user" ? "YOU" : "SP";
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
-  bubble.textContent = text;
-
-  row.append(avatar, bubble);
-  elements.messages.append(row);
-  elements.messages.scrollTop = elements.messages.scrollHeight;
-}
-
 async function connectLogic() {
   elements.connectButton.disabled = true;
   setConnection({ state: "connecting" });
@@ -276,31 +289,6 @@ async function connectLogic() {
   }
 }
 
-async function sendMessage(text) {
-  const message = text.trim();
-  if (!message || sending) return;
-  sending = true;
-  elements.sendButton.disabled = true;
-  elements.messageInput.disabled = true;
-  appendMessage("user", message);
-  elements.messageInput.value = "";
-  resizeComposer();
-  showActivity("Thinking");
-
-  try {
-    const result = await window.studiochat.sendMessage(message);
-    appendMessage("assistant", result.text);
-  } catch (error) {
-    appendMessage("assistant", `I couldn't complete that: ${error.message}`);
-  } finally {
-    sending = false;
-    elements.sendButton.disabled = false;
-    elements.messageInput.disabled = false;
-    elements.messageInput.focus();
-    hideActivity();
-  }
-}
-
 async function runQuickAction(action, button) {
   const previous = button?.textContent;
   if (button) button.disabled = true;
@@ -308,7 +296,7 @@ async function runQuickAction(action, button) {
   try {
     const result = await window.studiochat.runQuickAction(action);
     if (["audit", "health"].includes(action)) {
-      appendMessage("assistant", result.text);
+      showToast(result.text, !result.ok);
     } else {
       showToast(result.ok ? "Logic action completed." : result.text, !result.ok);
     }
@@ -514,11 +502,6 @@ async function saveSettings(removeKey = false) {
   }
 }
 
-function resizeComposer() {
-  elements.messageInput.style.height = "auto";
-  elements.messageInput.style.height = `${Math.min(elements.messageInput.scrollHeight, 120)}px`;
-}
-
 function showApproval(request) {
   currentApproval = request;
   elements.approvalTitle.textContent = request.title;
@@ -547,30 +530,39 @@ elements.beatPlayer.addEventListener("play", () => { elements.pauseBeatButton.te
 elements.beatPlayer.addEventListener("pause", () => { elements.pauseBeatButton.textContent = "Resume"; });
 elements.beatPlayer.addEventListener("ended", stopBeatPreview);
 elements.importBeatButton.addEventListener("click", importSelectedBeat);
-elements.composer.addEventListener("submit", (event) => {
-  event.preventDefault();
-  void sendMessage(elements.messageInput.value);
+elements.singleModeButton.addEventListener("click", () => setCreationMode("single"));
+elements.albumModeButton.addEventListener("click", () => setCreationMode("album"));
+elements.creativeReadButton.addEventListener("click", () => {
+  saveProjectState();
+  elements.creativeReadOutput.textContent = "Direction saved to your local canvas. Keep collecting references before locking the next move.";
+  elements.creativeReadOutput.classList.remove("hidden");
+  showToast("Creative direction saved.");
 });
-elements.messageInput.addEventListener("input", resizeComposer);
-elements.messageInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter" && !event.shiftKey) {
-    event.preventDefault();
-    void sendMessage(elements.messageInput.value);
-  }
+elements.workspaceImageUpload.addEventListener("change", async (event) => {
+  try {
+    for (const file of [...event.target.files]) projectState.images.push({ id: crypto.randomUUID(), name: file.name, src: await readFileAsDataUrl(file), note: "" });
+    saveProjectState();
+    renderMoodboard();
+  } catch (error) { showToast(`Could not add image: ${error.message}`, true); }
+  finally { event.target.value = ""; }
 });
-
+for (const [field, key] of [[elements.moodInput, "mood"], [elements.soundInput, "sound"], [elements.worldInput, "world"]]) {
+  field.addEventListener("input", () => { projectState[key] = field.value; saveProjectState(); });
+}
 $$("[data-action]").forEach((button) => {
   button.addEventListener("click", () =>
     runQuickAction(button.dataset.action, button)
   );
 });
 
-$$("[data-prompt]").forEach((button) => {
-  button.addEventListener("click", () => sendMessage(button.dataset.prompt));
+$$('[data-creative-mode]').forEach((button) => {
+  button.addEventListener("click", () => setCreationMode(button.dataset.creativeMode));
 });
-
-$$("[data-creative-prompt]").forEach((button) => {
-  button.addEventListener("click", () => sendMessage(creativePrompts[button.dataset.creativePrompt]));
+$$('[data-board-tab]').forEach((button) => {
+  button.addEventListener("click", () => {
+    openProjectBoard();
+    $(`[data-project-tab="${button.dataset.boardTab}"]`)?.click();
+  });
 });
 
 elements.settingsButton.addEventListener("click", openSettings);
@@ -636,11 +628,6 @@ for (const [field, key] of [[elements.projectLyrics, "lyrics"], [elements.projec
 elements.closeSettings.addEventListener("click", closeSettings);
 elements.saveSettingsButton.addEventListener("click", () => saveSettings(false));
 elements.removeKeyButton.addEventListener("click", () => saveSettings(true));
-elements.newChatButton.addEventListener("click", async () => {
-  await window.studiochat.resetConversation();
-  elements.messages.innerHTML = "";
-  appendMessage("assistant", "New conversation started. What are we making for Plecat Mood?");
-});
 elements.acceptApproval.addEventListener("click", () => answerApproval(true));
 elements.declineApproval.addEventListener("click", () => answerApproval(false));
 
@@ -650,10 +637,11 @@ window.studiochat.onApproval(showApproval);
 
 async function bootstrap() {
   const state = await window.studiochat.getBootstrap();
-  elements.versionLabel.textContent = `studiochat MVP · ${state.version}`;
+  elements.versionLabel.textContent = `studio-chat MVP · ${state.version}`;
   setConnection(state.logic);
+  setCreationMode(projectState.mode || "single");
+  renderMoodboard();
   void loadBeatInbox();
-  void connectLogic();
 }
 
 void bootstrap();

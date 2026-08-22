@@ -8,7 +8,7 @@ import {
 } from "./core.js";
 import { PLECAT_CONTEXT } from "./plecat-context.js";
 
-const SYSTEM_PROMPT = `You are studiochat, a focused Logic Pro assistant and creative director inside a macOS desktop app.
+const SYSTEM_PROMPT = `You are studio-chat, a focused Logic Pro assistant and creative director inside a macOS desktop app.
 
 Creative workspace:
 - The active project is Plecat Mood, a complete single/album creation world.

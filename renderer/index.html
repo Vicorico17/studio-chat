@@ -10,7 +10,7 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' file:; connect-src 'none'"
     />
-    <title>studiochat</title>
+    <title>studio-chat</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -21,8 +21,8 @@
             <span></span><span></span><span></span><span></span><span></span>
           </div>
           <div>
-            <h1>studiochat</h1>
-            <p>Logic Pro · Plecat Mood studio</p>
+            <h1>studio-chat</h1>
+            <p>Logic Pro · Plecat Mood workspace</p>
           </div>
         </div>
 
@@ -34,13 +34,13 @@
             </div>
             <span class="creative-signal">◌</span>
           </div>
-          <p>Music, world, lyrics, visuals, and rollout in one conversation.</p>
+          <p>Music, world, lyrics, visuals, and rollout in one creative canvas.</p>
           <div class="creative-prompts">
-            <button data-creative-prompt="single">Build a single</button>
-            <button data-creative-prompt="album">Shape the album</button>
-            <button data-creative-prompt="lyrics">Write lyrics</button>
-            <button data-creative-prompt="visuals">Define visuals</button>
-            <button data-creative-prompt="rollout">Plan the rollout</button>
+            <button data-creative-mode="single">Build a single</button>
+            <button data-creative-mode="album">Shape the album</button>
+            <button data-board-tab="lyrics">Write lyrics</button>
+            <button data-board-tab="images">Define visuals</button>
+            <button data-board-tab="notes">Plan the rollout</button>
           </div>
         </section>
 
@@ -112,9 +112,6 @@
         </section>
 
         <div class="sidebar-spacer"></div>
-        <button id="newChatButton" class="menu-button">
-          <span>New conversation</span><span>＋</span>
-        </button>
         <button id="settingsButton" class="menu-button">
           <span>Settings</span><span>⌘,</span>
         </button>
@@ -124,58 +121,54 @@
       <main class="main-panel">
         <header class="topbar">
           <div>
-            <span class="eyebrow">CURRENT SESSION</span>
-            <h2>Ask about your Logic project</h2>
+            <span class="eyebrow">PLECAT MOOD / CREATIVE WORKSPACE</span>
+            <h2>Shape the record visually</h2>
           </div>
           <div id="activityPill" class="activity-pill hidden">
             <span class="pulse"></span><span id="activityText">Thinking</span>
           </div>
-          <button id="projectBoardButton" class="project-board-button">Project board <span>⌘B</span></button>
+          <button id="projectBoardButton" class="project-board-button">Open project board <span>⌘B</span></button>
         </header>
 
-        <section id="messages" class="messages">
-          <div class="welcome-card">
-            <div class="welcome-glow"></div>
-            <span class="welcome-icon">◉</span>
-            <h3>Your studio, your era, without the terminal.</h3>
-            <p>
-              Make the record in one place: inspect tracks, control playback, shape songs and
-              lyrics, build the Plecat Mood world, and turn it into a release plan.
-            </p>
-            <div class="suggestions">
-              <button data-prompt="Check my Logic project and summarize the current state.">
-                Check my project
-              </button>
-              <button data-prompt="Select the first audio track and tell me whether it is ready for microphone monitoring.">
-                Check my microphone
-              </button>
-              <button data-prompt="Stop playback and return the playhead to the beginning.">
-                Reset transport
-              </button>
-              <button data-prompt="Build the first Plecat Mood single from the current era brief. Give me the sonic brief, song structure, lyric direction, visual concept, and the next three Logic steps.">
-                Start a single
-              </button>
-              <button data-prompt="Turn Plecat Mood into a complete album creation plan: chapter arc, tracklist, sequencing logic, sonic palette, visual system, anchor artifact, and rollout milestones.">
-                Shape the album
-              </button>
+        <section id="creationWorkspace" class="creation-workspace">
+          <div class="workspace-intro">
+            <div>
+              <span class="eyebrow">THE RECORD CANVAS</span>
+              <h3 id="workspaceTitle">Build the first single</h3>
+              <p id="workspaceSubtitle">Collect the feeling before you decide the details.</p>
+            </div>
+            <div class="mode-switch" role="tablist" aria-label="Creation type">
+              <button id="singleModeButton" class="mode-button active" data-mode="single">Single</button>
+              <button id="albumModeButton" class="mode-button" data-mode="album">Album</button>
             </div>
           </div>
+          <div class="workspace-grid">
+            <section class="moodboard-panel">
+              <div class="panel-heading"><div><span class="eyebrow">VISUAL LANGUAGE</span><h4>Moodboard</h4></div><label class="add-reference">＋ Add image<input id="workspaceImageUpload" type="file" accept="image/*" multiple /></label></div>
+              <div id="moodboardGrid" class="moodboard-grid">
+                <button class="mood-tile tile-dusk" data-mood="Dusk / sodium light"><span>Dusk / sodium light</span></button>
+                <button class="mood-tile tile-water" data-mood="Water / softened edges"><span>Water / softened edges</span></button>
+                <button class="mood-tile tile-concrete" data-mood="Concrete / quiet geometry"><span>Concrete / quiet geometry</span></button>
+                <button class="mood-tile tile-figure" data-mood="One figure / distance"><span>One figure / distance</span></button>
+              </div>
+            </section>
+            <aside class="compass-panel">
+              <div class="panel-heading"><div><span class="eyebrow">CREATIVE COMPASS</span><h4>What should this feel like?</h4></div><span class="compass-mark">✳</span></div>
+              <label class="field-label">Emotional centre<textarea id="moodInput" rows="3" placeholder="e.g. the moment after someone leaves…"></textarea></label>
+              <label class="field-label">Sound palette<textarea id="soundInput" rows="3" placeholder="e.g. close vocal, dry drums, glassy synth…"></textarea></label>
+              <label class="field-label">World in one line<textarea id="worldInput" rows="3" placeholder="A sentence to return to when choices get noisy."></textarea></label>
+              <button id="creativeReadButton" class="primary wide">Save this direction <span>↗</span></button>
+              <div id="creativeReadOutput" class="creative-read-output hidden"></div>
+            </aside>
+          </div>
+          <section class="direction-strip">
+            <div class="direction-card"><span class="eyebrow">NEXT FRAME</span><strong id="nextFrameTitle">Cover image</strong><p>Find the image that makes the whole world feel inevitable.</p></div>
+            <div class="direction-card"><span class="eyebrow">SONIC ANCHOR</span><strong>Reference the feeling</strong><p>Drop a beat or reference track into the board, then let the arrangement follow.</p></div>
+            <div class="direction-card"><span class="eyebrow">OPEN THREAD</span><strong>Keep one thing unresolved</strong><p>The tension is part of the identity. Don’t polish the mystery away.</p></div>
+          </section>
+          <div class="workspace-footer"><button id="projectBoardButton" class="text-button">Open full project board ↗</button><span>Everything saves locally on this Mac.</span></div>
         </section>
 
-        <footer class="composer-wrap">
-          <form id="composer" class="composer">
-            <textarea
-              id="messageInput"
-              rows="1"
-              placeholder="Ask Codex to make, shape, or move the record forward…"
-              aria-label="Message"
-            ></textarea>
-            <button id="sendButton" type="submit" aria-label="Send message">
-              ↑
-            </button>
-          </form>
-          <p>Higher-risk actions always require confirmation.</p>
-        </footer>
       </main>
     </div>
 
@@ -196,7 +189,7 @@
             disabled
             placeholder="No API key needed"
           />
-          <small id="keyHint">studiochat starts Codex automatically when you send a chat message.</small>
+          <small id="keyHint">studio-chat starts the studio guide automatically when you ask for a read.</small>
         </label>
         <label>
           Model
@@ -224,7 +217,7 @@
         <div class="modal-header">
           <div>
             <span class="eyebrow">PLECAT MOOD / LOCAL PROJECT</span>
-            <h2>Creation board</h2>
+            <h2>Full project board</h2>
           </div>
           <button id="closeProjectBoard" class="icon-button">×</button>
         </div>
