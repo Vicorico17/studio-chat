@@ -1,0 +1,50 @@
+{
+  "name": "studiochat",
+  "version": "0.1.0",
+  "description": "A friendly desktop chat and control surface for Logic Pro via MCP.",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "electron .",
+    "test": "node --test",
+    "check": "node --check src/main.js && node --check src/codex-service.js && node --check src/logic-service.js && node --check src/audio-import-service.js && node --check src/beat-download-service.js && node --check src/openai-service.js && node --check src/core.js && node --check src/preload.cjs && node --check renderer/app.js",
+    "build": "electron-builder --mac dir",
+    "dist": "electron-builder --mac dmg"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "openai": "^6.49.0"
+  },
+  "devDependencies": {
+    "electron": "^43.2.0",
+    "electron-builder": "^26.15.3"
+  },
+  "overrides": {
+    "@hono/node-server": "^2.0.11"
+  },
+  "build": {
+    "appId": "com.vicorico.studiochat",
+    "productName": "studiochat",
+    "asar": true,
+    "files": [
+      "src/**/*",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "icon": "build/icon-source.png",
+      "category": "public.app-category.music",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "title": "studiochat ${version}"
+    }
+  }
+}

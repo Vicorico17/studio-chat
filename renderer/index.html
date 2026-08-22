@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' file:; connect-src 'none'"
+    />
+    <title>studiochat</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div>
+            <h1>studiochat</h1>
+            <p>Logic Pro · Plecat Mood studio</p>
+          </div>
+        </div>
+
+        <section class="creative-card">
+          <div class="creative-card-header">
+            <div>
+              <span class="eyebrow">PLECAT MOOD</span>
+              <strong>Full era workspace</strong>
+            </div>
+            <span class="creative-signal">◌</span>
+          </div>
+          <p>Music, world, lyrics, visuals, and rollout in one conversation.</p>
+          <div class="creative-prompts">
+            <button data-creative-prompt="single">Build a single</button>
+            <button data-creative-prompt="album">Shape the album</button>
+            <button data-creative-prompt="lyrics">Write lyrics</button>
+            <button data-creative-prompt="visuals">Define visuals</button>
+            <button data-creative-prompt="rollout">Plan the rollout</button>
+          </div>
+        </section>
+
+        <section class="connection-card">
+          <div class="connection-row">
+            <div>
+              <span class="eyebrow">LOGIC PRO</span>
+              <strong id="connectionLabel">Not connected</strong>
+            </div>
+            <span id="connectionDot" class="status-dot"></span>
+          </div>
+          <button id="connectButton" class="secondary wide">Connect</button>
+        </section>
+
+        <section class="sidebar-section">
+          <h2>Quick controls</h2>
+          <div class="quick-grid">
+            <button class="quick-action" data-action="play">
+              <span class="quick-icon">▶</span>
+              <span>Play</span>
+            </button>
+            <button class="quick-action" data-action="stop">
+              <span class="quick-icon">■</span>
+              <span>Stop</span>
+            </button>
+            <button class="quick-action" data-action="rewind">
+              <span class="quick-icon">↤</span>
+              <span>Rewind</span>
+            </button>
+            <button class="quick-action" data-action="selectMic">
+              <span class="quick-icon">●</span>
+              <span>Mic track</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="sidebar-section">
+          <h2>Session</h2>
+          <button class="menu-button" data-action="health">
+            <span>Check connection</span><span>⌁</span>
+          </button>
+          <button class="menu-button" data-action="audit">
+            <span>Inspect project</span><span>⌘</span>
+          </button>
+        </section>
+
+        <section class="sidebar-section">
+          <h2>Add a beat</h2>
+          <input id="beatUrlInput" class="beat-url" type="url" placeholder="Paste YouTube link…" aria-label="YouTube beat link" />
+          <p id="beatPreview" class="beat-preview">MP3 + cover image will be saved locally.</p>
+          <div class="inbox-actions">
+            <button id="downloadBeatButton" class="primary">Fetch &amp; Get MP3</button>
+          </div>
+        </section>
+
+        <section class="sidebar-section">
+          <h2>Beat inbox</h2>
+          <div class="library-header"><span id="beatCount">0 beats</span><button id="openBeatFolderButton" class="text-button">Open folder</button></div>
+          <div id="beatLibrary" class="beat-library" role="listbox" aria-label="Downloaded beats"></div>
+          <div class="inbox-actions">
+            <button id="refreshBeatsButton" class="secondary">Refresh</button>
+            <button id="playBeatButton" class="secondary" disabled>Play from start</button>
+          </div>
+          <audio id="beatPlayer" preload="metadata"></audio>
+          <div class="inbox-actions inbox-import">
+            <button id="pauseBeatButton" class="secondary" disabled>Pause / Resume</button>
+            <button id="importBeatButton" class="primary" disabled>Add to new Logic track</button>
+          </div>
+        </section>
+
+        <div class="sidebar-spacer"></div>
+        <button id="newChatButton" class="menu-button">
+          <span>New conversation</span><span>＋</span>
+        </button>
+        <button id="settingsButton" class="menu-button">
+          <span>Settings</span><span>⌘,</span>
+        </button>
+        <p id="versionLabel" class="version-label"></p>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <span class="eyebrow">CURRENT SESSION</span>
+            <h2>Ask about your Logic project</h2>
+          </div>
+          <div id="activityPill" class="activity-pill hidden">
+            <span class="pulse"></span><span id="activityText">Thinking</span>
+          </div>
+          <button id="projectBoardButton" class="project-board-button">Project board <span>⌘B</span></button>
+        </header>
+
+        <section id="messages" class="messages">
+          <div class="welcome-card">
+            <div class="welcome-glow"></div>
+            <span class="welcome-icon">◉</span>
+            <h3>Your studio, your era, without the terminal.</h3>
+            <p>
+              Make the record in one place: inspect tracks, control playback, shape songs and
+              lyrics, build the Plecat Mood world, and turn it into a release plan.
+            </p>
+            <div class="suggestions">
+              <button data-prompt="Check my Logic project and summarize the current state.">
+                Check my project
+              </button>
+              <button data-prompt="Select the first audio track and tell me whether it is ready for microphone monitoring.">
+                Check my microphone
+              </button>
+              <button data-prompt="Stop playback and return the playhead to the beginning.">
+                Reset transport
+              </button>
+              <button data-prompt="Build the first Plecat Mood single from the current era brief. Give me the sonic brief, song structure, lyric direction, visual concept, and the next three Logic steps.">
+                Start a single
+              </button>
+              <button data-prompt="Turn Plecat Mood into a complete album creation plan: chapter arc, tracklist, sequencing logic, sonic palette, visual system, anchor artifact, and rollout milestones.">
+                Shape the album
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <footer class="composer-wrap">
+          <form id="composer" class="composer">
+            <textarea
+              id="messageInput"
+              rows="1"
+              placeholder="Ask Codex to make, shape, or move the record forward…"
+              aria-label="Message"
+            ></textarea>
+            <button id="sendButton" type="submit" aria-label="Send message">
+              ↑
+            </button>
+          </form>
+          <p>Higher-risk actions always require confirmation.</p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="settingsModal" class="modal-backdrop hidden">
+      <div class="modal settings-modal">
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow">SETTINGS</span>
+            <h2>Codex connection</h2>
+          </div>
+          <button id="closeSettings" class="icon-button">×</button>
+        </div>
+        <label>
+          Codex runs locally using your existing Codex sign-in.
+          <input
+            id="apiKeyInput"
+            type="text"
+            disabled
+            placeholder="No API key needed"
+          />
+          <small id="keyHint">studiochat starts Codex automatically when you send a chat message.</small>
+        </label>
+        <label>
+          Model
+          <select id="modelSelect">
+            <option value="gpt-5.6-sol">GPT-5.6 Sol — best quality</option>
+            <option value="gpt-5.6-terra">GPT-5.6 Terra — balanced</option>
+          </select>
+        </label>
+        <label>
+          Reasoning effort
+          <select id="reasoningSelect">
+            <option value="low">Low — faster controls</option>
+            <option value="medium">Medium — more deliberation</option>
+          </select>
+        </label>
+        <div class="modal-actions">
+          <button id="removeKeyButton" class="danger-ghost">Remove key</button>
+          <button id="saveSettingsButton" class="primary">Save settings</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="projectBoardModal" class="modal-backdrop hidden">
+      <div class="modal project-modal">
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow">PLECAT MOOD / LOCAL PROJECT</span>
+            <h2>Creation board</h2>
+          </div>
+          <button id="closeProjectBoard" class="icon-button">×</button>
+        </div>
+        <div class="project-tabs" role="tablist">
+          <button class="project-tab active" data-project-tab="images">Images</button>
+          <button class="project-tab" data-project-tab="songs">Songs</button>
+          <button class="project-tab" data-project-tab="tracklist">Tracklist</button>
+          <button class="project-tab" data-project-tab="lyrics">Lyrics</button>
+          <button class="project-tab" data-project-tab="notes">Notes</button>
+        </div>
+        <section class="project-pane active" data-project-pane="images">
+          <div class="project-upload-row">
+            <label class="project-upload primary">Add images<input id="projectImageUpload" type="file" accept="image/*" multiple /></label>
+            <p>Stored locally in this app. Nothing is sent to Supabase.</p>
+          </div>
+          <div id="projectImageGrid" class="project-image-grid"></div>
+        </section>
+        <section class="project-pane" data-project-pane="songs">
+          <div class="project-upload-row">
+            <label class="project-upload primary">Add MP3 or WAV<input id="projectAudioUpload" type="file" accept="audio/*" multiple /></label>
+            <p>Reference songs and audio are kept in the local project board.</p>
+          </div>
+          <form id="projectSongForm" class="project-form">
+            <input name="title" placeholder="Song title" />
+            <input name="artist" placeholder="Artist / source" />
+            <input name="link" type="url" placeholder="Link (optional)" />
+            <input name="note" placeholder="Note" />
+            <button class="secondary" type="submit">Add reference</button>
+          </form>
+          <div id="projectSongList" class="project-song-list"></div>
+        </section>
+        <section class="project-pane" data-project-pane="tracklist">
+          <form id="projectTrackForm" class="project-form">
+            <input id="projectTrackInput" placeholder="Add a track name" />
+            <button class="primary" type="submit">Add track</button>
+          </form>
+          <ol id="projectTrackList" class="project-track-list"></ol>
+        </section>
+        <section class="project-pane" data-project-pane="lyrics">
+          <label class="project-label">Lyric ideas and working drafts<textarea id="projectLyrics" class="project-notes" rows="15" placeholder="Write lyrics, fragments, hooks, and voice notes..."></textarea></label>
+        </section>
+        <section class="project-pane" data-project-pane="notes">
+          <label class="project-label">Song names, references, and ideas<textarea id="projectSongNames" class="project-notes" rows="6" placeholder="Song names, one per line..."></textarea></label>
+          <label class="project-label">Ideas<textarea id="projectIdeas" class="project-notes" rows="7" placeholder="Creative notes, scenes, objects, rollout thoughts..."></textarea></label>
+        </section>
+        <p class="project-storage-note">Local project state saves automatically on this Mac.</p>
+      </div>
+    </div>
+
+    <div id="approvalModal" class="modal-backdrop hidden">
+      <div class="modal approval-modal">
+        <span class="approval-icon">!</span>
+        <h2 id="approvalTitle">Allow Logic action?</h2>
+        <p id="approvalSummary"></p>
+        <div class="modal-actions">
+          <button id="declineApproval" class="secondary">Cancel</button>
+          <button id="acceptApproval" class="primary">Allow action</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>
