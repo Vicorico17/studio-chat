@@ -63,7 +63,7 @@ export class BeatDownloadService {
     await execFileAsync(
       YTDLP_BINARY,
       [
-        ...YTDLP_YOUTUBE_ARGS, "--no-overwrites", "-f", "140/139/bestaudio", "-o", output,
+        ...YTDLP_YOUTUBE_ARGS, "--no-overwrites", "-o", output,
         "-x", "--audio-format", "mp3",
         "--write-thumbnail", "--convert-thumbnails", "jpg", sourceUrl
       ],
