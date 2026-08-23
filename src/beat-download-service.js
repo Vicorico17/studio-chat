@@ -12,7 +12,10 @@ const YTDLP_YOUTUBE_ARGS = [
   "--no-playlist",
   "--remote-components", "ejs:npm",
   "--js-runtimes", `deno:${DENO_BINARY}`,
-  "--ffmpeg-location", FFMPEG_BINARY
+  "--ffmpeg-location", FFMPEG_BINARY,
+  // Prefer Safari's HLS formats, which currently avoid YouTube's GVS PO-token
+  // requirement that can otherwise produce 403s for direct stream URLs.
+  "--extractor-args", "youtube:player_client=web_safari"
 ];
 
 const YTDLP_OPTIONS = {
