@@ -5,7 +5,23 @@ import path from "node:path";
 
 const execFileAsync = promisify(execFile);
 const YTDLP_BINARY = "/opt/homebrew/bin/yt-dlp";
-const YTDLP_YOUTUBE_ARGS = ["--no-playlist", "--remote-components", "ejs:npm"];
+const HOMEBREW_BIN = "/opt/homebrew/bin";
+const FFMPEG_BINARY = `${HOMEBREW_BIN}/ffmpeg`;
+const DENO_BINARY = `${HOMEBREW_BIN}/deno`;
+const YTDLP_YOUTUBE_ARGS = [
+  "--no-playlist",
+  "--remote-components", "ejs:npm",
+  "--js-runtimes", `deno:${DENO_BINARY}`,
+  "--ffmpeg-location", FFMPEG_BINARY
+];
+
+const YTDLP_OPTIONS = {
+  env: {
+    ...process.env,
+    // Electron launched from Finder does not inherit the shell's Homebrew PATH.
+    PATH: `${HOMEBREW_BIN}:${process.env.PATH || ""}`
+  }
+};
 
 function firstJsonLine(stdout) {
   const line = stdout.split("\n").find((value) => value.trim().startsWith("{"));
@@ -25,6 +41,7 @@ export class BeatDownloadService {
   async inspect(url) {
     const sourceUrl = this.#sourceUrl(url);
     const { stdout } = await execFileAsync(YTDLP_BINARY, [...YTDLP_YOUTUBE_ARGS, "-j", sourceUrl], {
+      ...YTDLP_OPTIONS,
       timeout: 60_000,
       maxBuffer: 8 * 1024 * 1024
     });
@@ -50,7 +67,7 @@ export class BeatDownloadService {
         "-x", "--audio-format", "mp3",
         "--write-thumbnail", "--convert-thumbnails", "jpg", sourceUrl
       ],
-      { timeout: 300_000, maxBuffer: 8 * 1024 * 1024 }
+      { ...YTDLP_OPTIONS, timeout: 300_000, maxBuffer: 8 * 1024 * 1024 }
     );
     const mp3Path = path.join(this.downloadDirectory, `${baseName}.mp3`);
     try {
