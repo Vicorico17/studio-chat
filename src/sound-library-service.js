@@ -15,6 +15,12 @@ const ALLOWED = {
 };
 const NOTE_NAMES = { C: 0, "C#": 1, Db: 1, D: 2, "D#": 3, Eb: 3, E: 4, F: 5, "F#": 6, Gb: 6, G: 7, "G#": 8, Ab: 8, A: 9, "A#": 10, Bb: 10, B: 11 };
 const SCALES = { minor: [0, 2, 3, 5, 7, 8, 10], major: [0, 2, 4, 5, 7, 9, 11] };
+const LOGIC_EFFECT_NAMES = [
+  "Pitch Correction", "PitchCor", "Noise Gate", "Channel EQ", "Console EQ", "Linear Phase EQ", "Vintage Tube EQ",
+  "Vintage Console EQ", "Vintage Graphic EQ", "Compressor", "DeEsser 2", "DeEsser", "Exciter", "ChromaGlow",
+  "Phat FX", "Step FX", "Overdrive", "Distortion", "Vocal Transformer", "Multipressor", "Enveloper",
+  "Space Designer", "ChromaVerb", "SilverVerb", "Tape Delay", "Stereo Delay", "Delay Designer", "Echo", "Gain", "Limiter", "Adaptive Limiter"
+];
 
 export class SoundLibraryService {
   constructor({ storageDirectory, userMusicDirectory, logicFactoryVocalDirectory = "/Applications/Logic Pro.app/Contents/Resources/Patches/Audio/04 Voice" }) {
@@ -211,7 +217,22 @@ export class SoundLibraryService {
 
   async #describe(filePath, type, source, metadata = {}) {
     const stats = await fs.stat(filePath);
-    return { id: crypto.createHash("sha1").update(filePath).digest("hex"), name: path.basename(filePath, path.extname(filePath)), path: filePath, extension: path.extname(filePath).toLowerCase(), type, source, size: stats.size, metadata };
+    const extension = path.extname(filePath).toLowerCase();
+    const presetPath = extension === ".patch" ? path.join(filePath, "#Root.cst") : filePath;
+    let plugins = [];
+    if (type === "vocal" && [".cst", ".patch"].includes(extension)) {
+      try { plugins = detectLogicEffects(await fs.readFile(presetPath)); } catch { /* chain inspection is optional */ }
+    }
+    return {
+      id: crypto.createHash("sha1").update(filePath).digest("hex"),
+      name: path.basename(filePath, extension),
+      path: filePath,
+      extension,
+      type,
+      source,
+      size: stats.size,
+      metadata: { ...metadata, plugins }
+    };
   }
 
   async #permittedManagedFile(filePath, type) {
@@ -219,6 +240,13 @@ export class SoundLibraryService {
     if (!candidate.startsWith(`${root}${path.sep}`) || !ALLOWED[type].has(path.extname(candidate).toLowerCase())) throw new Error("Choose a file from the managed Sounds library.");
     return candidate;
   }
+}
+
+function detectLogicEffects(buffer) {
+  const content = buffer.toString("latin1");
+  const found = LOGIC_EFFECT_NAMES.filter((name) => content.includes(name) && !(name === "DeEsser" && content.includes("DeEsser 2")));
+  if (found.includes("PitchCor") && !found.includes("Pitch Correction")) found[found.indexOf("PitchCor")] = "Pitch Correction";
+  return [...new Set(found.filter((name) => name !== "PitchCor"))];
 }
 
 function safeFilename(value) {

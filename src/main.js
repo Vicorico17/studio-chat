@@ -13,7 +13,7 @@ import { SoundLibraryService } from "./sound-library-service.js";
 import { ChannelStripPresetService } from "./channel-strip-preset-service.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const logicService = new LogicService();
+let logicService;
 const audioImportService = new AudioImportService(
   "/Users/vicorico/code/reclip/downloads"
 );
@@ -239,6 +239,11 @@ function registerIPC() {
 
 app.whenReady().then(() => {
   settingsStore = new SettingsStore();
+  const privateMcpDirectory = path.join(app.getPath("userData"), "logic-pro-mcp", "3.15.0");
+  logicService = new LogicService({
+    binary: path.join(privateMcpDirectory, "LogicProMCP"),
+    shareDirectory: privateMcpDirectory
+  });
   soundLibraryService = new SoundLibraryService({
     storageDirectory: path.join(app.getPath("userData"), "sounds"),
     userMusicDirectory: app.getPath("music")

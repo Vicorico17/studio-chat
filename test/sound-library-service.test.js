@@ -36,7 +36,7 @@ test("discovers and prepares Logic factory vocal patches", async () => {
   const factory = path.join(root, "Logic", "04 Voice");
   const patch = path.join(factory, "Warm Vocal.patch");
   await fs.mkdir(patch, { recursive: true });
-  await fs.writeFile(path.join(patch, "#Root.cst"), "factory preset");
+  await fs.writeFile(path.join(patch, "#Root.cst"), "factory preset Channel EQ Compressor DeEsser 2 ChromaVerb");
   const service = new SoundLibraryService({
     storageDirectory: path.join(root, "managed"),
     userMusicDirectory: music,
@@ -45,8 +45,9 @@ test("discovers and prepares Logic factory vocal patches", async () => {
 
   const item = (await service.list()).find((candidate) => candidate.name === "Warm Vocal");
   assert.equal(item.source, "Logic factory vocals");
+  assert.deepEqual(item.metadata.plugins, ["Channel EQ", "Compressor", "DeEsser 2", "ChromaVerb"]);
   const prepared = await service.preparePreset(item.path, "vocal");
   assert.equal(prepared.presetName, "Warm Vocal");
   assert.deepEqual(prepared.folderNames, ["studio-chat", "Logic Factory Vocals"]);
-  assert.equal(await fs.readFile(prepared.path, "utf8"), "factory preset");
+  assert.equal(await fs.readFile(prepared.path, "utf8"), "factory preset Channel EQ Compressor DeEsser 2 ChromaVerb");
 });

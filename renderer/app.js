@@ -107,6 +107,16 @@ let favoriteBeatIds = loadFavoriteBeatIds();
 let sounds = [];
 let soundsTab = "vocal";
 
+function openWorkspaceSection(targetId, button) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  $$(".workspace-nav-button").forEach((item) => item.classList.toggle("active", item === button));
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+  target.classList.remove("nav-highlight");
+  requestAnimationFrame(() => target.classList.add("nav-highlight"));
+  window.setTimeout(() => target.classList.remove("nav-highlight"), 1200);
+}
+
 const PROJECT_STORAGE_KEY = "studio-chat-plecat-project-v1";
 let projectState = loadProjectState();
 
@@ -156,7 +166,7 @@ function favoriteButton(source, file) {
 function allFavoriteBeats() {
   const youtube = beatFiles.map((file) => ({ ...file, source: "youtube", sourceLabel: "YouTube downloads" }));
   const plecat = albumLibrary.items
-    .filter((item) => item.category === "beats" && item.kind === "audio")
+    .filter((item) => item.kind === "audio")
     .map((file) => ({ ...file, source: "plecat", sourceLabel: "Plecat folder" }));
   return [...youtube, ...plecat].filter((file) => isFavorite(file.source, file.path));
 }
@@ -182,7 +192,7 @@ function renderFavorites() {
   if (!favorites.length) {
     const empty = document.createElement("div");
     empty.className = "favorite-empty";
-    empty.innerHTML = "<strong>Your favorites will live here.</strong><span>Press ☆ beside any beat from either library.</span>";
+    empty.innerHTML = "<strong>Your favorites will live here.</strong><span>Press ☆ beside any Plecat song or beat.</span>";
     elements.favoriteBeatList.append(empty);
     return;
   }
@@ -245,7 +255,11 @@ function renderSounds() {
     const meta = document.createElement("span");
     const license = item.metadata?.license || "Local Logic asset";
     meta.textContent = `${item.source} · ${item.extension.toUpperCase().slice(1)} · ${license}`;
-    copy.append(name, meta);
+    const chain = document.createElement("span");
+    const plugins = item.metadata?.plugins || [];
+    chain.className = "sound-chain";
+    chain.textContent = plugins.length ? `Editable chain: ${plugins.join(" → ")}` : "Editable after loading in Logic";
+    copy.append(name, meta, chain);
     const actions = document.createElement("div");
     actions.className = "sound-card-actions";
     const reveal = document.createElement("button");
@@ -492,8 +506,8 @@ function renderPlecatBeats() {
       } catch (error) { showToast(`Could not play Plecat beat: ${error.message}`, true); }
     });
     row.append(button);
-    if (item.category === "beats") row.append(favoriteButton("plecat", item));
-    else row.classList.add("song-row");
+    row.append(favoriteButton("plecat", item));
+    if (item.category === "songs") row.classList.add("song-row");
     elements.plecatBeatList.append(row);
   }
 }
@@ -874,6 +888,7 @@ elements.projectBoardButton.addEventListener("click", openProjectBoard);
 elements.openAlbumFolderButton.addEventListener("click", () => window.studiochat.openAlbumFolder());
 elements.openPlecatBeatFolderButton.addEventListener("click", () => window.studiochat.openAlbumFolder());
 elements.soundsSearch.addEventListener("input", renderSounds);
+$$('.workspace-nav-button').forEach((button) => button.addEventListener("click", () => openWorkspaceSection(button.dataset.workspaceTarget, button)));
 $$('[data-sounds-tab]').forEach((button) => button.addEventListener("click", () => {
   soundsTab = button.dataset.soundsTab;
   $$('[data-sounds-tab]').forEach((item) => item.classList.toggle("active", item === button));

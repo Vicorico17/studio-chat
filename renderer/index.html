@@ -26,6 +26,13 @@
           </div>
         </div>
 
+        <nav class="workspace-nav" aria-label="Workspace navigation">
+          <span class="eyebrow">OPEN</span>
+          <button class="workspace-nav-button" data-workspace-target="favoritesPanel"><span>★</span>Favorite songs</button>
+          <button class="workspace-nav-button" data-workspace-target="presetsPanel"><span>◫</span>Presets</button>
+          <button class="workspace-nav-button" data-workspace-target="moodboardPanel"><span>✦</span>Moodboard</button>
+        </nav>
+
         <section class="creative-card">
           <div class="creative-card-header">
             <div>
@@ -143,46 +150,15 @@
               <button id="albumModeButton" class="mode-button" data-mode="album">Album</button>
             </div>
           </div>
-          <section class="favorites-panel">
+          <section id="favoritesPanel" class="favorites-panel workspace-destination">
             <div class="favorites-heading">
-              <div><span class="eyebrow">YOUR SHORTLIST</span><h3>★ Favorite beats</h3><p>One place for your best Plecat-folder and YouTube beats.</p></div>
+              <div><span class="eyebrow">YOUR SHORTLIST</span><h3>★ Favorite songs &amp; beats</h3><p>One place for your best Plecat songs, Plecat beats, and YouTube beats.</p></div>
               <span id="favoriteBeatCount" class="favorite-count">0 favorites</span>
             </div>
             <div id="favoriteBeatList" class="favorite-beat-list"></div>
             <audio id="favoriteBeatPlayer" class="favorite-player" controls preload="metadata"></audio>
           </section>
-          <section class="sounds-panel">
-            <div class="sounds-hero">
-              <div><span class="eyebrow">SOUNDS / DIRECT TO LOGIC</span><h3>Presets &amp; MIDI</h3><p>Collect sounds, build ideas, and place them into the open Logic project.</p></div>
-              <span id="soundsCount" class="sounds-count">Loading…</span>
-            </div>
-            <div class="sounds-tabs" role="tablist" aria-label="Sounds library">
-              <button class="sounds-tab active" data-sounds-tab="vocal">Vocal presets</button>
-              <button class="sounds-tab" data-sounds-tab="midi">MIDI</button>
-              <button class="sounds-tab" data-sounds-tab="instrument">Instrument presets</button>
-            </div>
-            <div class="sounds-toolbar">
-              <input id="soundsSearch" type="search" placeholder="Search this library…" />
-              <label>Logic track <input id="soundsTrack" type="number" min="1" value="1" /></label>
-              <label id="midiBarLabel" class="hidden">Start bar <input id="midiStartBar" type="number" min="1" value="1" /></label>
-              <button id="addLocalSoundButton" class="secondary">Add local files</button>
-            </div>
-            <form id="soundDownloadForm" class="sound-download-form">
-              <input id="soundUrlInput" type="url" required placeholder="Paste a direct HTTPS .cst, .patch, .mid, or .midi URL…" />
-              <button class="primary" type="submit">Download</button>
-            </form>
-            <form id="midiGeneratorForm" class="midi-generator hidden">
-              <select id="midiRoot"><option>C</option><option>C#</option><option>D</option><option>Eb</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>Ab</option><option>A</option><option>Bb</option><option>B</option></select>
-              <select id="midiMode"><option value="minor">Minor</option><option value="major">Major</option></select>
-              <input id="midiProgression" value="1,6,3,7" aria-label="Scale degrees" />
-              <input id="midiBpm" type="number" min="40" max="240" value="90" aria-label="BPM" />
-              <input id="midiBars" type="number" min="1" max="16" value="4" aria-label="Bars" />
-              <button class="primary" type="submit">Generate MIDI</button>
-            </form>
-            <p id="soundsStatus" class="sounds-status">Scanning installed Logic presets…</p>
-            <div id="soundsList" class="sounds-list"></div>
-          </section>
-          <section class="sounds-panel">
+          <section id="presetsPanel" class="sounds-panel workspace-destination">
             <div class="sounds-hero">
               <div><span class="eyebrow">SOUNDS / DIRECT TO LOGIC</span><h3>Presets &amp; MIDI</h3><p>Collect sounds, build ideas, and place them into the open Logic project.</p></div>
               <span id="soundsCount" class="sounds-count">Loading…</span>
@@ -214,7 +190,7 @@
             <div id="soundsList" class="sounds-list"></div>
           </section>
           <div class="workspace-grid">
-            <section class="moodboard-panel">
+            <section id="moodboardPanel" class="moodboard-panel workspace-destination">
               <div class="panel-heading"><div><span class="eyebrow">VISUAL LANGUAGE</span><h4>Moodboard</h4></div><label class="add-reference">＋ Add image<input id="workspaceImageUpload" type="file" accept="image/*" multiple /></label></div>
               <div id="moodboardGrid" class="moodboard-grid">
                 <button class="mood-tile tile-dusk" data-mood="Dusk / sodium light"><span>Dusk / sodium light</span></button>

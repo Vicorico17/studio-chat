@@ -6,8 +6,7 @@ import { promisify } from "node:util";
 const execFileAsync = promisify(execFile);
 
 const MCP_BINARY = "/opt/homebrew/bin/LogicProMCP";
-const MCP_SHARE_DIR =
-  "/opt/homebrew/opt/logic-pro-mcp/share/logic-pro-mcp";
+const MCP_SHARE_DIR = "/opt/homebrew/opt/logic-pro-mcp/share/logic-pro-mcp";
 const CONNECT_TIMEOUT_MS = 15_000;
 
 function withTimeout(promise, label) {
@@ -22,7 +21,9 @@ function withTimeout(promise, label) {
 }
 
 export class LogicService {
-  constructor() {
+  constructor({ binary = MCP_BINARY, shareDirectory = MCP_SHARE_DIR } = {}) {
+    this.binary = binary;
+    this.shareDirectory = shareDirectory;
     this.client = null;
     this.transport = null;
     this.tools = [];
@@ -52,11 +53,11 @@ export class LogicService {
     );
 
     this.transport = new StdioClientTransport({
-      command: MCP_BINARY,
+      command: this.binary,
       args: [],
       env: {
         ...process.env,
-        LOGIC_PRO_MCP_SHARE_DIR: MCP_SHARE_DIR
+        LOGIC_PRO_MCP_SHARE_DIR: this.shareDirectory
       },
       stderr: "pipe"
     });
@@ -87,13 +88,13 @@ export class LogicService {
       connected: this.connected,
       toolCount: this.tools.length,
       server: "LogicProMCP",
-      binary: MCP_BINARY
+      binary: this.binary
     };
   }
 
   async version() {
     try {
-      const { stdout } = await execFileAsync(MCP_BINARY, ["--version"], { timeout: 5_000 });
+      const { stdout } = await execFileAsync(this.binary, ["--version"], { timeout: 5_000 });
       return stdout.trim() || "unknown";
     } catch {
       return "unavailable";
