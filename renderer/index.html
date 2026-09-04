@@ -109,14 +109,20 @@
             </div>
           </div>
           <section id="playerPanel" class="player-workspace workspace-destination workspace-view">
-            <div class="player-hero"><div><span class="eyebrow">PLECAT PLAYER</span><h3>Listen without leaving the workspace</h3><p>Start with your favorites, then move through every song and beat collected for the album.</p></div><span class="player-live-mark">▶</span></div>
             <section class="favorites-panel">
             <div class="favorites-heading">
               <div><span class="eyebrow">01 / YOUR SHORTLIST</span><h3>★ Favorite songs</h3><p>Your favorite Plecat songs and beats, plus saved YouTube beats.</p></div>
               <span id="favoriteBeatCount" class="favorite-count">0 favorites</span>
             </div>
+            <div class="player-bar">
+              <div class="player-now"><span class="player-art">♫</span><span><small>NOW PLAYING</small><strong id="playerNowTitle">Choose a song</strong><em id="playerNowSource">Favorites or Plecat archive</em></span></div>
+              <div class="player-transport">
+                <div class="player-buttons"><button id="playerPreviousButton" title="Previous">◀</button><button id="playerPlayButton" class="player-main-button" title="Play or pause">▶</button><button id="playerStopButton" title="Stop">■</button><button id="playerNextButton" title="Next">▶</button></div>
+                <div class="player-timeline"><span id="playerCurrentTime">0:00</span><input id="playerSeek" type="range" min="0" max="100" value="0" aria-label="Song position"><span id="playerDuration">0:00</span></div>
+              </div>
+              <audio id="favoriteBeatPlayer" preload="metadata"></audio>
+            </div>
             <div id="favoriteBeatList" class="favorite-beat-list"></div>
-            <audio id="favoriteBeatPlayer" class="favorite-player" controls preload="metadata"></audio>
             </section>
           </section>
           <section id="presetsPanel" class="sounds-panel workspace-destination workspace-view">
@@ -156,26 +162,8 @@
                 <div><span class="eyebrow">VISUAL LANGUAGE / INFINITE CANVAS</span><h4>Plecat Moodboard</h4><p>Drop or paste images, draw, connect references, write notes, and arrange the album world freely.</p></div>
                 <button id="focusMoodboardButton" class="secondary">Focus board</button>
               </div>
-              <div class="moodboard-era-card">
-                <div><span class="eyebrow">PLECAT MOOD</span><strong>Full era workspace</strong><p>Music, world, lyrics, visuals, and rollout in one creative canvas.</p></div>
-                <div class="creative-prompts moodboard-prompts">
-                  <button data-creative-mode="single">Build a single</button>
-                  <button data-creative-mode="album">Shape the album</button>
-                  <button data-board-tab="lyrics">Write lyrics</button>
-                  <button data-board-tab="images">Define visuals</button>
-                  <button data-board-tab="notes">Plan the rollout</button>
-                </div>
-              </div>
               <div class="moodboard-frame"><iframe id="moodboardCanvas" src="./board/index.html" title="Plecat draggable visual moodboard"></iframe></div>
             </section>
-            <aside class="compass-panel">
-              <div class="panel-heading"><div><span class="eyebrow">CREATIVE COMPASS</span><h4>What should this feel like?</h4></div><span class="compass-mark">✳</span></div>
-              <label class="field-label">Emotional centre<textarea id="moodInput" rows="3" placeholder="e.g. the moment after someone leaves…"></textarea></label>
-              <label class="field-label">Sound palette<textarea id="soundInput" rows="3" placeholder="e.g. close vocal, dry drums, glassy synth…"></textarea></label>
-              <label class="field-label">World in one line<textarea id="worldInput" rows="3" placeholder="A sentence to return to when choices get noisy."></textarea></label>
-              <button id="creativeReadButton" class="primary wide">Save this direction <span>↗</span></button>
-              <div id="creativeReadOutput" class="creative-read-output hidden"></div>
-            </aside>
           </div>
           <section id="beatDownloadPanel" class="beat-download-workspace workspace-view"></section>
           <section id="plecatLibraryPanel" class="plecat-beats-panel">
@@ -189,7 +177,6 @@
               <button class="plecat-library-filter" data-plecat-filter="beats">Beats</button>
             </div>
             <div id="plecatBeatList" class="plecat-beat-list" role="listbox" aria-label="Plecat songs and beats"></div>
-            <audio id="plecatBeatPlayer" class="album-player" controls preload="metadata"></audio>
           </section>
           <section class="direction-strip">
             <div class="direction-card"><span class="eyebrow">NEXT FRAME</span><strong id="nextFrameTitle">Cover image</strong><p>Find the image that makes the whole world feel inevitable.</p></div>

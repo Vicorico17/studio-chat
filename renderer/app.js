@@ -15,11 +15,6 @@ const elements = {
   nextFrameTitle: $("#nextFrameTitle"),
   moodboardCanvas: $("#moodboardCanvas"),
   focusMoodboardButton: $("#focusMoodboardButton"),
-  moodInput: $("#moodInput"),
-  soundInput: $("#soundInput"),
-  worldInput: $("#worldInput"),
-  creativeReadButton: $("#creativeReadButton"),
-  creativeReadOutput: $("#creativeReadOutput"),
   activityPill: $("#activityPill"),
   activityText: $("#activityText"),
   projectBoardButton: $("#projectBoardButton"),
@@ -45,11 +40,19 @@ const elements = {
   openAlbumFolderButton: $("#openAlbumFolderButton"),
   plecatBeatCount: $("#plecatBeatCount"),
   plecatBeatList: $("#plecatBeatList"),
-  plecatBeatPlayer: $("#plecatBeatPlayer"),
   openPlecatBeatFolderButton: $("#openPlecatBeatFolderButton"),
   favoriteBeatCount: $("#favoriteBeatCount"),
   favoriteBeatList: $("#favoriteBeatList"),
   favoriteBeatPlayer: $("#favoriteBeatPlayer"),
+  playerNowTitle: $("#playerNowTitle"),
+  playerNowSource: $("#playerNowSource"),
+  playerPreviousButton: $("#playerPreviousButton"),
+  playerPlayButton: $("#playerPlayButton"),
+  playerStopButton: $("#playerStopButton"),
+  playerNextButton: $("#playerNextButton"),
+  playerSeek: $("#playerSeek"),
+  playerCurrentTime: $("#playerCurrentTime"),
+  playerDuration: $("#playerDuration"),
   soundsCount: $("#soundsCount"),
   soundsSearch: $("#soundsSearch"),
   soundsTrack: $("#soundsTrack"),
@@ -106,6 +109,8 @@ let selectedPlecatBeatPath = "";
 let plecatLibraryFilter = "all";
 const FAVORITES_STORAGE_KEY = "studio-chat-beat-favorites-v1";
 let favoriteBeatIds = loadFavoriteBeatIds();
+let playerQueue = [];
+let playerIndex = -1;
 let sounds = [];
 let soundsTab = "vocal";
 
@@ -184,17 +189,35 @@ function allFavoriteBeats() {
 }
 
 async function playFavorite(file) {
+  playerQueue = allFavoriteBeats();
+  playerIndex = Math.max(0, playerQueue.findIndex((item) => favoriteId(item.source, item.path) === favoriteId(file.source, file.path)));
+  await playPlayerItem(file);
+}
+
+async function playPlayerItem(file) {
   try {
     elements.beatPlayer.pause();
-    elements.plecatBeatPlayer.pause();
     const previewUrl = file.source === "youtube"
       ? await window.studiochat.getBeatPreviewUrl(file.path)
       : await window.studiochat.getAlbumPreviewUrl(file.path);
     elements.favoriteBeatPlayer.src = previewUrl;
+    elements.playerNowTitle.textContent = file.name.replace(/\.[^.]+$/, "");
+    elements.playerNowSource.textContent = file.sourceLabel || (file.category === "songs" ? "Plecat song" : "Plecat beat");
     await elements.favoriteBeatPlayer.play();
     elements.favoriteBeatList.querySelectorAll(".playing").forEach((card) => card.classList.remove("playing"));
     elements.favoriteBeatList.querySelector(`[data-favorite-id="${CSS.escape(favoriteId(file.source, file.path))}"]`)?.classList.add("playing");
-  } catch (error) { showToast(`Could not play favorite: ${error.message}`, true); }
+  } catch (error) { showToast(`Could not play song: ${error.message}`, true); }
+}
+
+function formatPlayerTime(seconds) {
+  if (!Number.isFinite(seconds)) return "0:00";
+  return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+}
+
+function playPlayerOffset(offset) {
+  if (!playerQueue.length) return;
+  playerIndex = (playerIndex + offset + playerQueue.length) % playerQueue.length;
+  void playPlayerItem(playerQueue[playerIndex]);
 }
 
 function renderFavorites() {
@@ -423,12 +446,6 @@ function renderProjectBoard() {
   elements.projectIdeas.value = projectState.ideas;
 }
 
-function renderMoodboard() {
-  elements.moodInput.value = projectState.mood || "";
-  elements.soundInput.value = projectState.sound || "";
-  elements.worldInput.value = projectState.world || "";
-}
-
 function setCreationMode(mode) {
   projectState.mode = mode;
   const album = mode === "album";
@@ -490,14 +507,11 @@ function renderPlecatBeats() {
     meta.textContent = `${item.category === "songs" ? "SONG" : "BEAT"} · ${(item.size / 1024 / 1024).toFixed(1)} MB · ${item.relativePath}`;
     button.append(name, meta);
     button.addEventListener("click", async () => {
-      try {
-        selectedPlecatBeatPath = item.path;
-        elements.beatPlayer.pause();
-        elements.favoriteBeatPlayer.pause();
-        elements.plecatBeatPlayer.src = await window.studiochat.getAlbumPreviewUrl(item.path);
-        await elements.plecatBeatPlayer.play();
-        renderPlecatBeats();
-      } catch (error) { showToast(`Could not play Plecat beat: ${error.message}`, true); }
+      selectedPlecatBeatPath = item.path;
+      playerQueue = visibleAudio.map((file) => ({ ...file, source: "plecat", sourceLabel: file.category === "songs" ? "Plecat song" : "Plecat beat" }));
+      playerIndex = playerQueue.findIndex((file) => file.path === item.path);
+      await playPlayerItem(playerQueue[playerIndex]);
+      renderPlecatBeats();
     });
     row.append(button);
     row.append(favoriteButton("plecat", item));
@@ -722,7 +736,6 @@ async function previewSelectedBeat() {
   if (!filePath) return;
   elements.playBeatButton.disabled = true;
   try {
-    elements.plecatBeatPlayer.pause();
     elements.favoriteBeatPlayer.pause();
     const previewUrl = await window.studiochat.getBeatPreviewUrl(filePath);
     if (elements.beatPlayer.src !== previewUrl) elements.beatPlayer.src = previewUrl;
@@ -847,36 +860,47 @@ elements.beatPlayer.addEventListener("play", () => { elements.pauseBeatButton.te
 elements.beatPlayer.addEventListener("pause", () => { elements.pauseBeatButton.textContent = "Resume"; });
 elements.beatPlayer.addEventListener("ended", stopBeatPreview);
 elements.importBeatButton.addEventListener("click", importSelectedBeat);
+elements.playerPreviousButton.addEventListener("click", () => playPlayerOffset(-1));
+elements.playerNextButton.addEventListener("click", () => playPlayerOffset(1));
+elements.playerPlayButton.addEventListener("click", () => {
+  if (!elements.favoriteBeatPlayer.src) {
+    playerQueue = allFavoriteBeats();
+    if (playerQueue.length) { playerIndex = 0; void playPlayerItem(playerQueue[0]); }
+    return;
+  }
+  if (elements.favoriteBeatPlayer.paused) void elements.favoriteBeatPlayer.play();
+  else elements.favoriteBeatPlayer.pause();
+});
+elements.playerStopButton.addEventListener("click", () => {
+  elements.favoriteBeatPlayer.pause();
+  elements.favoriteBeatPlayer.currentTime = 0;
+});
+elements.favoriteBeatPlayer.addEventListener("play", () => { elements.playerPlayButton.textContent = "❚❚"; });
+elements.favoriteBeatPlayer.addEventListener("pause", () => { elements.playerPlayButton.textContent = "▶"; });
+elements.favoriteBeatPlayer.addEventListener("ended", () => playPlayerOffset(1));
+elements.favoriteBeatPlayer.addEventListener("loadedmetadata", () => {
+  elements.playerDuration.textContent = formatPlayerTime(elements.favoriteBeatPlayer.duration);
+});
+elements.favoriteBeatPlayer.addEventListener("timeupdate", () => {
+  const { currentTime, duration } = elements.favoriteBeatPlayer;
+  elements.playerCurrentTime.textContent = formatPlayerTime(currentTime);
+  elements.playerSeek.value = Number.isFinite(duration) && duration > 0 ? String((currentTime / duration) * 100) : "0";
+});
+elements.playerSeek.addEventListener("input", () => {
+  const duration = elements.favoriteBeatPlayer.duration;
+  if (Number.isFinite(duration)) elements.favoriteBeatPlayer.currentTime = (Number(elements.playerSeek.value) / 100) * duration;
+});
 elements.singleModeButton.addEventListener("click", () => setCreationMode("single"));
 elements.albumModeButton.addEventListener("click", () => setCreationMode("album"));
-elements.creativeReadButton.addEventListener("click", () => {
-  saveProjectState();
-  elements.creativeReadOutput.textContent = "Direction saved to your local canvas. Keep collecting references before locking the next move.";
-  elements.creativeReadOutput.classList.remove("hidden");
-  showToast("Creative direction saved.");
-});
 elements.focusMoodboardButton.addEventListener("click", () => {
   const panel = document.getElementById("moodboardPanel");
   const focused = panel.classList.toggle("focused");
   elements.focusMoodboardButton.textContent = focused ? "Exit focus" : "Focus board";
 });
-for (const [field, key] of [[elements.moodInput, "mood"], [elements.soundInput, "sound"], [elements.worldInput, "world"]]) {
-  field.addEventListener("input", () => { projectState[key] = field.value; saveProjectState(); });
-}
 $$("[data-action]").forEach((button) => {
   button.addEventListener("click", () =>
     runQuickAction(button.dataset.action, button)
   );
-});
-
-$$('[data-creative-mode]').forEach((button) => {
-  button.addEventListener("click", () => setCreationMode(button.dataset.creativeMode));
-});
-$$('[data-board-tab]').forEach((button) => {
-  button.addEventListener("click", () => {
-    openProjectBoard();
-    $(`[data-project-tab="${button.dataset.boardTab}"]`)?.click();
-  });
 });
 
 elements.settingsButton.addEventListener("click", openSettings);
@@ -1010,7 +1034,6 @@ async function bootstrap() {
   elements.mcpVersionLabel.textContent = `LogicProMCP ${state.logicMcpVersion}`;
   setConnection(state.logic);
   setCreationMode(projectState.mode || "single");
-  renderMoodboard();
   renderFavorites();
   void loadAlbumLibrary();
   void loadBeatInbox();
