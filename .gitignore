@@ -1,4 +1,5 @@
 node_modules/
 dist/
+renderer/board/
 .DS_Store
 *.log

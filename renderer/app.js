@@ -4,6 +4,8 @@ const $$ = (selector) => [...document.querySelectorAll(selector)];
 const elements = {
   connectionLabel: $("#connectionLabel"),
   connectionDot: $("#connectionDot"),
+  connectionCard: $("#connectionCard"),
+  connectionDetail: $("#connectionDetail"),
   connectButton: $("#connectButton"),
   mcpVersionLabel: $("#mcpVersionLabel"),
   singleModeButton: $("#singleModeButton"),
@@ -11,8 +13,8 @@ const elements = {
   workspaceTitle: $("#workspaceTitle"),
   workspaceSubtitle: $("#workspaceSubtitle"),
   nextFrameTitle: $("#nextFrameTitle"),
-  moodboardGrid: $("#moodboardGrid"),
-  workspaceImageUpload: $("#workspaceImageUpload"),
+  moodboardCanvas: $("#moodboardCanvas"),
+  focusMoodboardButton: $("#focusMoodboardButton"),
   moodInput: $("#moodInput"),
   soundInput: $("#soundInput"),
   worldInput: $("#worldInput"),
@@ -111,7 +113,18 @@ function openWorkspaceSection(targetId, button) {
   const target = document.getElementById(targetId);
   if (!target) return;
   $$(".workspace-nav-button").forEach((item) => item.classList.toggle("active", item === button));
-  target.scrollIntoView({ behavior: "smooth", block: "start" });
+  $$(".workspace-view").forEach((view) => view.classList.toggle("active-workspace-view", view === target));
+  const labels = {
+    favoritesPanel: ["Your shortlist", "Favorite songs & beats"],
+    presetsPanel: ["Sounds / direct to Logic", "Presets & MIDI"],
+    moodboardWorkspace: ["Visual language", "Plecat Moodboard"],
+    beatDownloadPanel: ["Collect new sound", "Beat download & inbox"],
+    plecatLibraryPanel: ["Plecat folder", "Album music library"]
+  };
+  const [eyebrow, title] = labels[targetId] || ["Plecat Mood", "Creative workspace"];
+  document.querySelector(".topbar .eyebrow").textContent = eyebrow.toUpperCase();
+  document.querySelector(".topbar h2").textContent = title;
+  document.querySelector(".main-panel").scrollTo({ top: 0, behavior: "smooth" });
   target.classList.remove("nav-highlight");
   requestAnimationFrame(() => target.classList.add("nav-highlight"));
   window.setTimeout(() => target.classList.remove("nav-highlight"), 1200);
@@ -412,27 +425,9 @@ function renderProjectBoard() {
 }
 
 function renderMoodboard() {
-  const uploaded = projectState.images.map((image) => {
-    const card = document.createElement("article");
-    card.className = "mood-tile uploaded-tile";
-    const img = document.createElement("img");
-    img.src = image.src;
-    img.alt = image.name || "Uploaded reference";
-    const label = document.createElement("span");
-    label.textContent = image.name || "Untitled reference";
-    card.append(img, label);
-    return card;
-  });
-  const tiles = [...elements.moodboardGrid.querySelectorAll(".mood-tile:not(.uploaded-tile)")];
-  elements.moodboardGrid.replaceChildren(...uploaded, ...tiles);
   elements.moodInput.value = projectState.mood || "";
   elements.soundInput.value = projectState.sound || "";
   elements.worldInput.value = projectState.world || "";
-  $$(".mood-tile[data-mood]").forEach((tile) => tile.addEventListener("click", () => {
-    projectState.mood = tile.dataset.mood;
-    elements.moodInput.value = projectState.mood;
-    saveProjectState();
-  }));
 }
 
 function setCreationMode(mode) {
@@ -557,18 +552,23 @@ function closeProjectBoard() {
 function setConnection(status) {
   const state = status.state || (status.connected ? "connected" : "idle");
   elements.connectionDot.className = `status-dot ${state}`;
+  elements.connectionCard.className = `connection-card ${state}`;
   if (state === "connected") {
-    elements.connectionLabel.textContent = `Connected · ${status.toolCount || 0} tools`;
-    elements.connectButton.textContent = "Reconnect";
+    elements.connectionLabel.textContent = "Logic is live";
+    elements.connectButton.innerHTML = '<span class="connect-button-icon">✓</span><span>Connected to Logic</span>';
+    elements.connectionDetail.textContent = `${status.toolCount || 0} studio tools ready · transport, tracks, mixer, MIDI, project and analysis controls`;
   } else if (state === "connecting") {
     elements.connectionLabel.textContent = "Connecting…";
-    elements.connectButton.textContent = "Connecting…";
+    elements.connectButton.innerHTML = '<span class="connect-button-icon">◌</span><span>Connecting to Logic…</span>';
+    elements.connectionDetail.textContent = "Checking Logic Pro, permissions, MCP tools, and live project access…";
   } else if (state === "error") {
     elements.connectionLabel.textContent = "Connection failed";
-    elements.connectButton.textContent = "Try again";
+    elements.connectButton.innerHTML = '<span class="connect-button-icon">↻</span><span>Try connection again</span>';
+    elements.connectionDetail.textContent = status.message || "Open Logic Pro and check Automation and Accessibility permissions.";
   } else {
     elements.connectionLabel.textContent = "Not connected";
-    elements.connectButton.textContent = "Connect";
+    elements.connectButton.innerHTML = '<span class="connect-button-icon">⌁</span><span>Connect to Logic</span>';
+    elements.connectionDetail.textContent = "Start Logic Pro, then connect the studio controls.";
   }
 }
 
@@ -856,13 +856,10 @@ elements.creativeReadButton.addEventListener("click", () => {
   elements.creativeReadOutput.classList.remove("hidden");
   showToast("Creative direction saved.");
 });
-elements.workspaceImageUpload.addEventListener("change", async (event) => {
-  try {
-    for (const file of [...event.target.files]) projectState.images.push({ id: crypto.randomUUID(), name: file.name, src: await readFileAsDataUrl(file), note: "" });
-    saveProjectState();
-    renderMoodboard();
-  } catch (error) { showToast(`Could not add image: ${error.message}`, true); }
-  finally { event.target.value = ""; }
+elements.focusMoodboardButton.addEventListener("click", () => {
+  const panel = document.getElementById("moodboardPanel");
+  const focused = panel.classList.toggle("focused");
+  elements.focusMoodboardButton.textContent = focused ? "Exit focus" : "Focus board";
 });
 for (const [field, key] of [[elements.moodInput, "mood"], [elements.soundInput, "sound"], [elements.worldInput, "world"]]) {
   field.addEventListener("input", () => { projectState[key] = field.value; saveProjectState(); });
@@ -1006,6 +1003,8 @@ window.studiochat.onActivity(showActivity);
 window.studiochat.onApproval(showApproval);
 
 async function bootstrap() {
+  const beatDownloadPanel = document.getElementById("beatDownloadPanel");
+  beatDownloadPanel.append(document.getElementById("beatDownloadSource"), document.getElementById("beatInboxSource"));
   const state = await window.studiochat.getBootstrap();
   elements.versionLabel.textContent = `studio-chat MVP · ${state.version}`;
   elements.mcpVersionLabel.textContent = `LogicProMCP ${state.logicMcpVersion}`;
@@ -1016,6 +1015,8 @@ async function bootstrap() {
   void loadAlbumLibrary();
   void loadBeatInbox();
   void loadSounds();
+  const initialNavigation = document.querySelector('[data-workspace-target="favoritesPanel"]');
+  openWorkspaceSection("favoritesPanel", initialNavigation);
 }
 
 void bootstrap();

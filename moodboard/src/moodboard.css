@@ -1,0 +1,5 @@
+html, body, #root, .board-shell { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+body { background: #0b0d12; }
+.board-shell { border-radius: 14px; }
+.plecat-board-logo { color: #9bff6e; font: 800 18px/1 Inter, sans-serif; letter-spacing: .22em; }
+.excalidraw .App-menu_top { backdrop-filter: blur(16px); }

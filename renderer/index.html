@@ -30,28 +30,12 @@
           <span class="eyebrow">OPEN</span>
           <button class="workspace-nav-button" data-workspace-target="favoritesPanel"><span>★</span>Favorite songs</button>
           <button class="workspace-nav-button" data-workspace-target="presetsPanel"><span>◫</span>Presets</button>
-          <button class="workspace-nav-button" data-workspace-target="moodboardPanel"><span>✦</span>Moodboard</button>
+          <button class="workspace-nav-button" data-workspace-target="moodboardWorkspace"><span>✦</span>Moodboard</button>
+          <button class="workspace-nav-button" data-workspace-target="beatDownloadPanel"><span>↓</span>Beat download</button>
+          <button class="workspace-nav-button" data-workspace-target="plecatLibraryPanel"><span>♫</span>Plecat library</button>
         </nav>
 
-        <section class="creative-card">
-          <div class="creative-card-header">
-            <div>
-              <span class="eyebrow">PLECAT MOOD</span>
-              <strong>Full era workspace</strong>
-            </div>
-            <span class="creative-signal">◌</span>
-          </div>
-          <p>Music, world, lyrics, visuals, and rollout in one creative canvas.</p>
-          <div class="creative-prompts">
-            <button data-creative-mode="single">Build a single</button>
-            <button data-creative-mode="album">Shape the album</button>
-            <button data-board-tab="lyrics">Write lyrics</button>
-            <button data-board-tab="images">Define visuals</button>
-            <button data-board-tab="notes">Plan the rollout</button>
-          </div>
-        </section>
-
-        <section class="connection-card">
+        <section id="connectionCard" class="connection-card">
           <div class="connection-row">
             <div>
               <span class="eyebrow">LOGIC PRO</span>
@@ -59,43 +43,18 @@
             </div>
             <span id="connectionDot" class="status-dot"></span>
           </div>
-          <button id="connectButton" class="secondary wide">Connect</button>
-          <p id="mcpVersionLabel" class="mcp-version-label">LogicProMCP checking…</p>
-        </section>
-
-        <section class="sidebar-section">
-          <h2>Quick controls</h2>
-          <div class="quick-grid">
-            <button class="quick-action" data-action="play">
-              <span class="quick-icon">▶</span>
-              <span>Play</span>
-            </button>
-            <button class="quick-action" data-action="stop">
-              <span class="quick-icon">■</span>
-              <span>Stop</span>
-            </button>
-            <button class="quick-action" data-action="rewind">
-              <span class="quick-icon">↤</span>
-              <span>Rewind</span>
-            </button>
-            <button class="quick-action" data-action="selectMic">
-              <span class="quick-icon">●</span>
-              <span>Mic track</span>
-            </button>
+          <button id="connectButton" class="logic-connect-button wide"><span class="connect-button-icon">⌁</span><span>Connect to Logic</span></button>
+          <div class="connection-details">
+            <p id="mcpVersionLabel" class="mcp-version-label">LogicProMCP checking…</p>
+            <p id="connectionDetail">Start Logic Pro, then connect the studio controls.</p>
+          </div>
+          <div class="connection-tools">
+            <button data-action="health"><span>Check status</span><span>⌁</span></button>
+            <button data-action="audit"><span>Inspect project</span><span>⌘</span></button>
           </div>
         </section>
 
-        <section class="sidebar-section">
-          <h2>Session</h2>
-          <button class="menu-button" data-action="health">
-            <span>Check connection</span><span>⌁</span>
-          </button>
-          <button class="menu-button" data-action="audit">
-            <span>Inspect project</span><span>⌘</span>
-          </button>
-        </section>
-
-        <section class="sidebar-section">
+        <section id="beatDownloadSource" class="sidebar-section">
           <h2>Add a beat</h2>
           <input id="beatUrlInput" class="beat-url" type="url" placeholder="Paste YouTube link…" aria-label="YouTube beat link" />
           <p id="beatPreview" class="beat-preview">MP3 + cover image will be saved locally.</p>
@@ -104,7 +63,7 @@
           </div>
         </section>
 
-        <section class="sidebar-section">
+        <section id="beatInboxSource" class="sidebar-section">
           <h2>Beat inbox</h2>
           <div class="library-header"><span id="beatCount">0 beats</span><button id="openBeatFolderButton" class="text-button">Open folder</button></div>
           <div id="beatLibrary" class="beat-library" role="listbox" aria-label="Downloaded beats"></div>
@@ -150,7 +109,7 @@
               <button id="albumModeButton" class="mode-button" data-mode="album">Album</button>
             </div>
           </div>
-          <section id="favoritesPanel" class="favorites-panel workspace-destination">
+          <section id="favoritesPanel" class="favorites-panel workspace-destination workspace-view">
             <div class="favorites-heading">
               <div><span class="eyebrow">YOUR SHORTLIST</span><h3>★ Favorite songs &amp; beats</h3><p>One place for your best Plecat songs, Plecat beats, and YouTube beats.</p></div>
               <span id="favoriteBeatCount" class="favorite-count">0 favorites</span>
@@ -158,7 +117,7 @@
             <div id="favoriteBeatList" class="favorite-beat-list"></div>
             <audio id="favoriteBeatPlayer" class="favorite-player" controls preload="metadata"></audio>
           </section>
-          <section id="presetsPanel" class="sounds-panel workspace-destination">
+          <section id="presetsPanel" class="sounds-panel workspace-destination workspace-view">
             <div class="sounds-hero">
               <div><span class="eyebrow">SOUNDS / DIRECT TO LOGIC</span><h3>Presets &amp; MIDI</h3><p>Collect sounds, build ideas, and place them into the open Logic project.</p></div>
               <span id="soundsCount" class="sounds-count">Loading…</span>
@@ -189,15 +148,23 @@
             <p id="soundsStatus" class="sounds-status">Scanning installed Logic presets…</p>
             <div id="soundsList" class="sounds-list"></div>
           </section>
-          <div class="workspace-grid">
+          <div id="moodboardWorkspace" class="workspace-grid workspace-view">
             <section id="moodboardPanel" class="moodboard-panel workspace-destination">
-              <div class="panel-heading"><div><span class="eyebrow">VISUAL LANGUAGE</span><h4>Moodboard</h4></div><label class="add-reference">＋ Add image<input id="workspaceImageUpload" type="file" accept="image/*" multiple /></label></div>
-              <div id="moodboardGrid" class="moodboard-grid">
-                <button class="mood-tile tile-dusk" data-mood="Dusk / sodium light"><span>Dusk / sodium light</span></button>
-                <button class="mood-tile tile-water" data-mood="Water / softened edges"><span>Water / softened edges</span></button>
-                <button class="mood-tile tile-concrete" data-mood="Concrete / quiet geometry"><span>Concrete / quiet geometry</span></button>
-                <button class="mood-tile tile-figure" data-mood="One figure / distance"><span>One figure / distance</span></button>
+              <div class="panel-heading">
+                <div><span class="eyebrow">VISUAL LANGUAGE / INFINITE CANVAS</span><h4>Plecat Moodboard</h4><p>Drop or paste images, draw, connect references, write notes, and arrange the album world freely.</p></div>
+                <button id="focusMoodboardButton" class="secondary">Focus board</button>
               </div>
+              <div class="moodboard-era-card">
+                <div><span class="eyebrow">PLECAT MOOD</span><strong>Full era workspace</strong><p>Music, world, lyrics, visuals, and rollout in one creative canvas.</p></div>
+                <div class="creative-prompts moodboard-prompts">
+                  <button data-creative-mode="single">Build a single</button>
+                  <button data-creative-mode="album">Shape the album</button>
+                  <button data-board-tab="lyrics">Write lyrics</button>
+                  <button data-board-tab="images">Define visuals</button>
+                  <button data-board-tab="notes">Plan the rollout</button>
+                </div>
+              </div>
+              <div class="moodboard-frame"><iframe id="moodboardCanvas" src="./board/index.html" title="Plecat draggable visual moodboard"></iframe></div>
             </section>
             <aside class="compass-panel">
               <div class="panel-heading"><div><span class="eyebrow">CREATIVE COMPASS</span><h4>What should this feel like?</h4></div><span class="compass-mark">✳</span></div>
@@ -208,7 +175,8 @@
               <div id="creativeReadOutput" class="creative-read-output hidden"></div>
             </aside>
           </div>
-          <section class="plecat-beats-panel">
+          <section id="beatDownloadPanel" class="beat-download-workspace workspace-view"></section>
+          <section id="plecatLibraryPanel" class="plecat-beats-panel workspace-view">
             <div class="panel-heading">
               <div><span class="eyebrow">PLECAT FOLDER / MUSIC ARCHIVE</span><h4>Every song and beat collected for the album</h4></div>
               <div class="plecat-beats-heading-actions"><span id="plecatBeatCount">0 audio files</span><button id="openPlecatBeatFolderButton" class="text-button">Open folder</button></div>

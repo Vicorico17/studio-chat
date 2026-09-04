@@ -5,20 +5,26 @@
   "type": "module",
   "main": "src/main.js",
   "scripts": {
-    "dev": "electron .",
+    "dev": "npm run build:board && electron .",
+    "build:board": "vite build --config vite.moodboard.config.js",
     "test": "node --test",
     "check": "node --check src/main.js && node --check src/codex-service.js && node --check src/logic-service.js && node --check src/audio-import-service.js && node --check src/album-library-service.js && node --check src/sound-library-service.js && node --check src/channel-strip-preset-service.js && node --check src/beat-download-service.js && node --check src/openai-service.js && node --check src/core.js && node --check src/preload.cjs && node --check renderer/app.js",
-    "build": "electron-builder --mac dir",
-    "dist": "electron-builder --mac dmg"
+    "build": "npm run build:board && electron-builder --mac dir",
+    "dist": "npm run build:board && electron-builder --mac dmg"
   },
   "dependencies": {
+    "@excalidraw/excalidraw": "^0.18.1",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "midi-file": "^1.2.4",
-    "openai": "^6.49.0"
+    "openai": "^6.49.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
     "electron": "^43.2.0",
-    "electron-builder": "^26.15.3"
+    "electron-builder": "^26.15.3",
+    "vite": "^8.2.2"
   },
   "overrides": {
     "@hono/node-server": "^2.0.11"
