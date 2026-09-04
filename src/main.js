@@ -1,13 +1,16 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { pathToFileURL } from "node:url";
-import { app, BrowserWindow, ipcMain, nativeTheme } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell } from "electron";
 import { LogicService } from "./logic-service.js";
 import { CodexService } from "./codex-service.js";
 import { SettingsStore } from "./settings-store.js";
 import { createdTrackIndex, toolResultText } from "./core.js";
-import { AudioImportService } from "./audio-import-service.js";
+import { AudioImportService, ensurePlayablePreview } from "./audio-import-service.js";
 import { BeatDownloadService } from "./beat-download-service.js";
+import { AlbumLibraryService } from "./album-library-service.js";
+import { SoundLibraryService } from "./sound-library-service.js";
+import { ChannelStripPresetService } from "./channel-strip-preset-service.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const logicService = new LogicService();
@@ -17,9 +20,14 @@ const audioImportService = new AudioImportService(
 const beatDownloadService = new BeatDownloadService(
   "/Users/vicorico/code/reclip/downloads"
 );
+const albumLibraryService = new AlbumLibraryService(
+  "/Users/vicorico/Desktop/PLECAT"
+);
 let mainWindow;
 let settingsStore;
 let codexService;
+let soundLibraryService;
+const channelStripPresetService = new ChannelStripPresetService();
 let approvalSequence = 0;
 const pendingApprovals = new Map();
 
@@ -59,6 +67,7 @@ function emitStatus(value) {
 function registerIPC() {
   ipcMain.handle("app:bootstrap", async () => ({
     logic: logicService.status(),
+    logicMcpVersion: await logicService.version(),
     settings: settingsStore.getPublicSettings(),
     version: app.getVersion()
   }));
@@ -99,11 +108,61 @@ function registerIPC() {
       coverUrl: file.coverPath ? pathToFileURL(file.coverPath).href : null
     }));
   });
+  ipcMain.handle("album-library:list", () => albumLibraryService.inventory());
+  ipcMain.handle("album-library:preview-url", async (_event, filePath) =>
+    pathToFileURL(await ensurePlayablePreview(await albumLibraryService.permittedAudioPath(filePath), { cacheSource: true })).href
+  );
+  ipcMain.handle("album-library:open-folder", async () => {
+    await shell.openPath("/Users/vicorico/Desktop/PLECAT");
+  });
+
+  ipcMain.handle("sounds:list", () => soundLibraryService.list());
+  ipcMain.handle("sounds:download", (_event, value) => soundLibraryService.download(value));
+  ipcMain.handle("sounds:generate-midi", (_event, value) => soundLibraryService.generateMidi(value));
+  ipcMain.handle("sounds:reveal", async (_event, filePath) => {
+    const items = await soundLibraryService.list();
+    if (!items.some((item) => item.path === filePath)) throw new Error("That sound-library item is no longer available.");
+    shell.showItemInFolder(filePath);
+    return { ok: true };
+  });
+  ipcMain.handle("sounds:add-local", async (_event, type) => {
+    const filters = type === "midi"
+      ? [{ name: "MIDI", extensions: ["mid", "midi"] }]
+      : [{ name: "Logic presets", extensions: ["cst", "patch", "pst"] }];
+    const selection = await dialog.showOpenDialog(mainWindow, { properties: ["openFile", "multiSelections"], filters });
+    if (selection.canceled) return [];
+    return soundLibraryService.importLocal(selection.filePaths, type);
+  });
+  ipcMain.handle("sounds:apply-midi", async (_event, { filePath, bar = 1 }) => {
+    const sequence = await soundLibraryService.midiSequence(filePath);
+    const approved = await requestApproval({
+      title: "Add MIDI to Logic?",
+      summary: `Create a new Logic instrument track containing ${sequence.noteCount} notes at bar ${bar}.`,
+      toolName: "logic_tracks",
+      arguments: { command: "record_sequence", bar, noteCount: sequence.noteCount }
+    });
+    if (!approved) return { ok: false, text: "MIDI import cancelled." };
+    const result = await logicService.callTool("logic_tracks", { command: "record_sequence", params: { bar: Number(bar), notes: sequence.notes, tempo: sequence.tempo } });
+    return { ok: !result.isError, text: toolResultText(result) };
+  });
+  ipcMain.handle("sounds:apply-preset", async (_event, { filePath, type, track = 0 }) => {
+    const preset = await soundLibraryService.preparePreset(filePath, type);
+    const approved = await requestApproval({
+      title: "Load preset into Logic?",
+      summary: `Load “${preset.presetName}” onto Logic track ${Number(track) + 1}. This replaces that channel strip's current setting.`,
+      toolName: "channel_strip_preset",
+      arguments: { track: Number(track), preset: preset.presetName }
+    });
+    if (!approved) return { ok: false, text: "Preset load cancelled." };
+    const selected = await logicService.callTool("logic_tracks", { command: "select", params: { index: Number(track) } });
+    if (selected.isError) throw new Error(`Could not select Logic track ${Number(track) + 1}: ${toolResultText(selected)}`);
+    return channelStripPresetService.apply(preset);
+  });
   ipcMain.handle("beat-inbox:preview-url", async (_event, filePath) => {
     const files = await audioImportService.listFiles();
     const selected = files.find((file) => file.path === filePath);
     if (!selected) throw new Error("That audio file is no longer in the Beat Inbox.");
-    return pathToFileURL(selected.path).href;
+    return pathToFileURL(await audioImportService.playablePreviewPath(selected.path)).href;
   });
   ipcMain.handle("beat-inbox:open-folder", async () => {
     const { shell } = await import("electron");
@@ -180,6 +239,10 @@ function registerIPC() {
 
 app.whenReady().then(() => {
   settingsStore = new SettingsStore();
+  soundLibraryService = new SoundLibraryService({
+    storageDirectory: path.join(app.getPath("userData"), "sounds"),
+    userMusicDirectory: app.getPath("music")
+  });
   codexService = new CodexService({ cwd: app.getPath("userData") });
   registerIPC();
   createWindow();

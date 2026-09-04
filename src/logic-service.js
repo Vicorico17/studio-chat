@@ -1,5 +1,9 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
 
 const MCP_BINARY = "/opt/homebrew/bin/LogicProMCP";
 const MCP_SHARE_DIR =
@@ -85,6 +89,15 @@ export class LogicService {
       server: "LogicProMCP",
       binary: MCP_BINARY
     };
+  }
+
+  async version() {
+    try {
+      const { stdout } = await execFileAsync(MCP_BINARY, ["--version"], { timeout: 5_000 });
+      return stdout.trim() || "unknown";
+    } catch {
+      return "unavailable";
+    }
   }
 
   async listTools() {

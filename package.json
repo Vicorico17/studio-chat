@@ -7,12 +7,13 @@
   "scripts": {
     "dev": "electron .",
     "test": "node --test",
-    "check": "node --check src/main.js && node --check src/codex-service.js && node --check src/logic-service.js && node --check src/audio-import-service.js && node --check src/beat-download-service.js && node --check src/openai-service.js && node --check src/core.js && node --check src/preload.cjs && node --check renderer/app.js",
+    "check": "node --check src/main.js && node --check src/codex-service.js && node --check src/logic-service.js && node --check src/audio-import-service.js && node --check src/album-library-service.js && node --check src/sound-library-service.js && node --check src/channel-strip-preset-service.js && node --check src/beat-download-service.js && node --check src/openai-service.js && node --check src/core.js && node --check src/preload.cjs && node --check renderer/app.js",
     "build": "electron-builder --mac dir",
     "dist": "electron-builder --mac dmg"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "midi-file": "^1.2.4",
     "openai": "^6.49.0"
   },
   "devDependencies": {
@@ -23,8 +24,8 @@
     "@hono/node-server": "^2.0.11"
   },
   "build": {
-  "appId": "com.vicorico.studiochat",
-  "productName": "studio-chat",
+    "appId": "com.vicorico.studiochat",
+    "productName": "studio-chat",
     "asar": true,
     "files": [
       "src/**/*",

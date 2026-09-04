@@ -19,6 +19,10 @@ lyrics, visual briefs, and release plans.
 - Conversation continuity through `previous_response_id`
 - API key storage protected by Electron `safeStorage` and the macOS Keychain
 - Dark native macOS interface
+- Separate Plecat and YouTube beat libraries with persistent favorites
+- Local Sounds library for installed/downloaded vocal and instrument presets
+- Local MIDI progression generation and confirmation-gated Logic import
+- Cloud-safe audio preview caching for large Plecat files
 
 ## Requirements
 
@@ -57,6 +61,12 @@ the project or application files.
 
 - `src/main.js` — Electron main process, window lifecycle, IPC, and approvals
 - `src/logic-service.js` — LogicProMCP stdio client and tool execution
+- `src/audio-import-service.js` — audio validation, format normalization, and
+  cloud-file preview caching
+- `src/sound-library-service.js` — preset/MIDI discovery, managed downloads,
+  generation, and MIDI parsing
+- `src/channel-strip-preset-service.js` — confirmation-gated Logic channel-strip
+  preset loading
 - `src/openai-service.js` — Responses API conversation and tool loop
 - `src/codex-service.js` — local Codex conversation with Plecat Mood context
 - `src/plecat-context.js` — canonical Plecat Mood creative brief bundled into

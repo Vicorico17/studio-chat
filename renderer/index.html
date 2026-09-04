@@ -53,6 +53,7 @@
             <span id="connectionDot" class="status-dot"></span>
           </div>
           <button id="connectButton" class="secondary wide">Connect</button>
+          <p id="mcpVersionLabel" class="mcp-version-label">LogicProMCP checking…</p>
         </section>
 
         <section class="sidebar-section">
@@ -142,6 +143,76 @@
               <button id="albumModeButton" class="mode-button" data-mode="album">Album</button>
             </div>
           </div>
+          <section class="favorites-panel">
+            <div class="favorites-heading">
+              <div><span class="eyebrow">YOUR SHORTLIST</span><h3>★ Favorite beats</h3><p>One place for your best Plecat-folder and YouTube beats.</p></div>
+              <span id="favoriteBeatCount" class="favorite-count">0 favorites</span>
+            </div>
+            <div id="favoriteBeatList" class="favorite-beat-list"></div>
+            <audio id="favoriteBeatPlayer" class="favorite-player" controls preload="metadata"></audio>
+          </section>
+          <section class="sounds-panel">
+            <div class="sounds-hero">
+              <div><span class="eyebrow">SOUNDS / DIRECT TO LOGIC</span><h3>Presets &amp; MIDI</h3><p>Collect sounds, build ideas, and place them into the open Logic project.</p></div>
+              <span id="soundsCount" class="sounds-count">Loading…</span>
+            </div>
+            <div class="sounds-tabs" role="tablist" aria-label="Sounds library">
+              <button class="sounds-tab active" data-sounds-tab="vocal">Vocal presets</button>
+              <button class="sounds-tab" data-sounds-tab="midi">MIDI</button>
+              <button class="sounds-tab" data-sounds-tab="instrument">Instrument presets</button>
+            </div>
+            <div class="sounds-toolbar">
+              <input id="soundsSearch" type="search" placeholder="Search this library…" />
+              <label>Logic track <input id="soundsTrack" type="number" min="1" value="1" /></label>
+              <label id="midiBarLabel" class="hidden">Start bar <input id="midiStartBar" type="number" min="1" value="1" /></label>
+              <button id="addLocalSoundButton" class="secondary">Add local files</button>
+            </div>
+            <form id="soundDownloadForm" class="sound-download-form">
+              <input id="soundUrlInput" type="url" required placeholder="Paste a direct HTTPS .cst, .patch, .mid, or .midi URL…" />
+              <button class="primary" type="submit">Download</button>
+            </form>
+            <form id="midiGeneratorForm" class="midi-generator hidden">
+              <select id="midiRoot"><option>C</option><option>C#</option><option>D</option><option>Eb</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>Ab</option><option>A</option><option>Bb</option><option>B</option></select>
+              <select id="midiMode"><option value="minor">Minor</option><option value="major">Major</option></select>
+              <input id="midiProgression" value="1,6,3,7" aria-label="Scale degrees" />
+              <input id="midiBpm" type="number" min="40" max="240" value="90" aria-label="BPM" />
+              <input id="midiBars" type="number" min="1" max="16" value="4" aria-label="Bars" />
+              <button class="primary" type="submit">Generate MIDI</button>
+            </form>
+            <p id="soundsStatus" class="sounds-status">Scanning installed Logic presets…</p>
+            <div id="soundsList" class="sounds-list"></div>
+          </section>
+          <section class="sounds-panel">
+            <div class="sounds-hero">
+              <div><span class="eyebrow">SOUNDS / DIRECT TO LOGIC</span><h3>Presets &amp; MIDI</h3><p>Collect sounds, build ideas, and place them into the open Logic project.</p></div>
+              <span id="soundsCount" class="sounds-count">Loading…</span>
+            </div>
+            <div class="sounds-tabs" role="tablist" aria-label="Sounds library">
+              <button class="sounds-tab active" data-sounds-tab="vocal">Vocal presets</button>
+              <button class="sounds-tab" data-sounds-tab="midi">MIDI</button>
+              <button class="sounds-tab" data-sounds-tab="instrument">Instrument presets</button>
+            </div>
+            <div class="sounds-toolbar">
+              <input id="soundsSearch" type="search" placeholder="Search this library…" />
+              <label>Logic track <input id="soundsTrack" type="number" min="1" value="1" /></label>
+              <label id="midiBarLabel" class="hidden">Start bar <input id="midiStartBar" type="number" min="1" value="1" /></label>
+              <button id="addLocalSoundButton" class="secondary">Add local files</button>
+            </div>
+            <form id="soundDownloadForm" class="sound-download-form">
+              <input id="soundUrlInput" type="url" required placeholder="Paste a direct HTTPS .cst, .patch, .mid, or .midi URL…" />
+              <button class="primary" type="submit">Download</button>
+            </form>
+            <form id="midiGeneratorForm" class="midi-generator hidden">
+              <select id="midiRoot"><option>C</option><option>C#</option><option>D</option><option>Eb</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>Ab</option><option>A</option><option>Bb</option><option>B</option></select>
+              <select id="midiMode"><option value="minor">Minor</option><option value="major">Major</option></select>
+              <input id="midiProgression" value="1,6,3,7" aria-label="Scale degrees" />
+              <input id="midiBpm" type="number" min="40" max="240" value="90" aria-label="BPM" />
+              <input id="midiBars" type="number" min="1" max="16" value="4" aria-label="Bars" />
+              <button class="primary" type="submit">Generate MIDI</button>
+            </form>
+            <p id="soundsStatus" class="sounds-status">Scanning installed Logic presets…</p>
+            <div id="soundsList" class="sounds-list"></div>
+          </section>
           <div class="workspace-grid">
             <section class="moodboard-panel">
               <div class="panel-heading"><div><span class="eyebrow">VISUAL LANGUAGE</span><h4>Moodboard</h4></div><label class="add-reference">＋ Add image<input id="workspaceImageUpload" type="file" accept="image/*" multiple /></label></div>
@@ -161,6 +232,19 @@
               <div id="creativeReadOutput" class="creative-read-output hidden"></div>
             </aside>
           </div>
+          <section class="plecat-beats-panel">
+            <div class="panel-heading">
+              <div><span class="eyebrow">PLECAT FOLDER / MUSIC ARCHIVE</span><h4>Every song and beat collected for the album</h4></div>
+              <div class="plecat-beats-heading-actions"><span id="plecatBeatCount">0 audio files</span><button id="openPlecatBeatFolderButton" class="text-button">Open folder</button></div>
+            </div>
+            <div class="plecat-library-filters" role="tablist" aria-label="Plecat music filters">
+              <button class="plecat-library-filter active" data-plecat-filter="all">All audio</button>
+              <button class="plecat-library-filter" data-plecat-filter="songs">Songs</button>
+              <button class="plecat-library-filter" data-plecat-filter="beats">Beats</button>
+            </div>
+            <div id="plecatBeatList" class="plecat-beat-list" role="listbox" aria-label="Plecat songs and beats"></div>
+            <audio id="plecatBeatPlayer" class="album-player" controls preload="metadata"></audio>
+          </section>
           <section class="direction-strip">
             <div class="direction-card"><span class="eyebrow">NEXT FRAME</span><strong id="nextFrameTitle">Cover image</strong><p>Find the image that makes the whole world feel inevitable.</p></div>
             <div class="direction-card"><span class="eyebrow">SONIC ANCHOR</span><strong>Reference the feeling</strong><p>Drop a beat or reference track into the board, then let the arrangement follow.</p></div>
@@ -216,19 +300,33 @@
       <div class="modal project-modal">
         <div class="modal-header">
           <div>
-            <span class="eyebrow">PLECAT MOOD / LOCAL PROJECT</span>
-            <h2>Full project board</h2>
+            <span class="eyebrow">ALBUM 001 / LOCAL PROJECT</span>
+            <h2>Plecat</h2>
           </div>
           <button id="closeProjectBoard" class="icon-button">×</button>
         </div>
         <div class="project-tabs" role="tablist">
-          <button class="project-tab active" data-project-tab="images">Images</button>
+          <button class="project-tab active" data-project-tab="library">Library</button>
+          <button class="project-tab" data-project-tab="images">Images</button>
           <button class="project-tab" data-project-tab="songs">Songs</button>
           <button class="project-tab" data-project-tab="tracklist">Tracklist</button>
           <button class="project-tab" data-project-tab="lyrics">Lyrics</button>
           <button class="project-tab" data-project-tab="notes">Notes</button>
         </div>
-        <section class="project-pane active" data-project-pane="images">
+        <section class="project-pane active" data-project-pane="library">
+          <div class="album-hero">
+            <div><span class="eyebrow">FIRST ALBUM</span><h3>PLECAT</h3><p id="albumLibrarySummary">Reading the album archive…</p></div>
+            <button id="openAlbumFolderButton" class="secondary">Open source folder</button>
+          </div>
+          <div class="album-filters" role="tablist" aria-label="Plecat library categories">
+            <button class="album-filter active" data-album-filter="songs">Songs <span id="albumSongCount">0</span></button>
+            <button class="album-filter" data-album-filter="beats">Beats <span id="albumBeatCount">0</span></button>
+            <button class="album-filter" data-album-filter="other">Other <span id="albumOtherCount">0</span></button>
+          </div>
+          <div id="albumLibraryList" class="album-library-list"></div>
+          <audio id="albumPlayer" class="album-player" controls preload="metadata"></audio>
+        </section>
+        <section class="project-pane" data-project-pane="images">
           <div class="project-upload-row">
             <label class="project-upload primary">Add images<input id="projectImageUpload" type="file" accept="image/*" multiple /></label>
             <p>Stored locally in this app. Nothing is sent to Supabase.</p>
