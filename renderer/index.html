@@ -28,11 +28,10 @@
 
         <nav class="workspace-nav" aria-label="Workspace navigation">
           <span class="eyebrow">OPEN</span>
-          <button class="workspace-nav-button" data-workspace-target="favoritesPanel"><span>★</span>Favorite songs</button>
+          <button class="workspace-nav-button" data-workspace-target="playerPanel"><span>▶</span>Player</button>
           <button class="workspace-nav-button" data-workspace-target="presetsPanel"><span>◫</span>Presets</button>
           <button class="workspace-nav-button" data-workspace-target="moodboardWorkspace"><span>✦</span>Moodboard</button>
           <button class="workspace-nav-button" data-workspace-target="beatDownloadPanel"><span>↓</span>Beat download</button>
-          <button class="workspace-nav-button" data-workspace-target="plecatLibraryPanel"><span>♫</span>Plecat library</button>
         </nav>
 
         <section id="connectionCard" class="connection-card">
@@ -109,13 +108,16 @@
               <button id="albumModeButton" class="mode-button" data-mode="album">Album</button>
             </div>
           </div>
-          <section id="favoritesPanel" class="favorites-panel workspace-destination workspace-view">
+          <section id="playerPanel" class="player-workspace workspace-destination workspace-view">
+            <div class="player-hero"><div><span class="eyebrow">PLECAT PLAYER</span><h3>Listen without leaving the workspace</h3><p>Start with your favorites, then move through every song and beat collected for the album.</p></div><span class="player-live-mark">▶</span></div>
+            <section class="favorites-panel">
             <div class="favorites-heading">
-              <div><span class="eyebrow">YOUR SHORTLIST</span><h3>★ Favorite songs &amp; beats</h3><p>One place for your best Plecat songs, Plecat beats, and YouTube beats.</p></div>
+              <div><span class="eyebrow">01 / YOUR SHORTLIST</span><h3>★ Favorite songs</h3><p>Your favorite Plecat songs and beats, plus saved YouTube beats.</p></div>
               <span id="favoriteBeatCount" class="favorite-count">0 favorites</span>
             </div>
             <div id="favoriteBeatList" class="favorite-beat-list"></div>
             <audio id="favoriteBeatPlayer" class="favorite-player" controls preload="metadata"></audio>
+            </section>
           </section>
           <section id="presetsPanel" class="sounds-panel workspace-destination workspace-view">
             <div class="sounds-hero">
@@ -176,9 +178,9 @@
             </aside>
           </div>
           <section id="beatDownloadPanel" class="beat-download-workspace workspace-view"></section>
-          <section id="plecatLibraryPanel" class="plecat-beats-panel workspace-view">
+          <section id="plecatLibraryPanel" class="plecat-beats-panel">
             <div class="panel-heading">
-              <div><span class="eyebrow">PLECAT FOLDER / MUSIC ARCHIVE</span><h4>Every song and beat collected for the album</h4></div>
+              <div><span class="eyebrow">02 / PLECAT MUSIC ARCHIVE</span><h4>Every song and beat collected for the album</h4></div>
               <div class="plecat-beats-heading-actions"><span id="plecatBeatCount">0 audio files</span><button id="openPlecatBeatFolderButton" class="text-button">Open folder</button></div>
             </div>
             <div class="plecat-library-filters" role="tablist" aria-label="Plecat music filters">

@@ -174,6 +174,13 @@ p {
 .beat-download-workspace .beat-url { min-height: 52px; font-size: 13px; }
 .beat-download-workspace #downloadBeatButton { width: 100%; min-height: 48px; margin-top: 10px; }
 .beat-download-workspace .beat-library { max-height: 52vh; }
+.player-workspace { display: grid; gap: 18px; }
+.player-hero { display: flex; align-items: center; justify-content: space-between; padding: 24px 26px; border: 1px solid rgba(155,255,110,.2); border-radius: 18px; background: radial-gradient(circle at 88% 20%, rgba(155,255,110,.15), transparent 38%), var(--panel-raised); }
+.player-hero h3 { margin-top: 6px; font-size: 25px; letter-spacing: -.03em; }
+.player-hero p { margin-top: 6px; color: var(--muted); font-size: 11px; }
+.player-live-mark { display: grid; width: 54px; height: 54px; place-items: center; padding-left: 3px; border-radius: 50%; background: var(--accent); color: #10220a; font-size: 18px; box-shadow: 0 0 30px rgba(155,255,110,.24); }
+.player-workspace > .favorites-panel,
+.player-workspace > .plecat-beats-panel { margin: 0; }
 .workspace-destination.nav-highlight { animation: nav-highlight 1.1s ease-out; }
 @keyframes nav-highlight { 0% { box-shadow: 0 0 0 2px rgba(155,255,110,.7), 0 0 32px rgba(155,255,110,.18); } 100% { box-shadow: none; } }
 

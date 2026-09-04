@@ -115,11 +115,10 @@ function openWorkspaceSection(targetId, button) {
   $$(".workspace-nav-button").forEach((item) => item.classList.toggle("active", item === button));
   $$(".workspace-view").forEach((view) => view.classList.toggle("active-workspace-view", view === target));
   const labels = {
-    favoritesPanel: ["Your shortlist", "Favorite songs & beats"],
+    playerPanel: ["Plecat audio", "Player"],
     presetsPanel: ["Sounds / direct to Logic", "Presets & MIDI"],
     moodboardWorkspace: ["Visual language", "Plecat Moodboard"],
     beatDownloadPanel: ["Collect new sound", "Beat download & inbox"],
-    plecatLibraryPanel: ["Plecat folder", "Album music library"]
   };
   const [eyebrow, title] = labels[targetId] || ["Plecat Mood", "Creative workspace"];
   document.querySelector(".topbar .eyebrow").textContent = eyebrow.toUpperCase();
@@ -1005,6 +1004,7 @@ window.studiochat.onApproval(showApproval);
 async function bootstrap() {
   const beatDownloadPanel = document.getElementById("beatDownloadPanel");
   beatDownloadPanel.append(document.getElementById("beatDownloadSource"), document.getElementById("beatInboxSource"));
+  document.getElementById("playerPanel").append(document.getElementById("plecatLibraryPanel"));
   const state = await window.studiochat.getBootstrap();
   elements.versionLabel.textContent = `studio-chat MVP · ${state.version}`;
   elements.mcpVersionLabel.textContent = `LogicProMCP ${state.logicMcpVersion}`;
@@ -1015,8 +1015,8 @@ async function bootstrap() {
   void loadAlbumLibrary();
   void loadBeatInbox();
   void loadSounds();
-  const initialNavigation = document.querySelector('[data-workspace-target="favoritesPanel"]');
-  openWorkspaceSection("favoritesPanel", initialNavigation);
+  const initialNavigation = document.querySelector('[data-workspace-target="playerPanel"]');
+  openWorkspaceSection("playerPanel", initialNavigation);
 }
 
 void bootstrap();
