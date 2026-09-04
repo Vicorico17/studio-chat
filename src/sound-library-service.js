@@ -17,21 +17,23 @@ const NOTE_NAMES = { C: 0, "C#": 1, Db: 1, D: 2, "D#": 3, Eb: 3, E: 4, F: 5, "F#
 const SCALES = { minor: [0, 2, 3, 5, 7, 8, 10], major: [0, 2, 4, 5, 7, 9, 11] };
 
 export class SoundLibraryService {
-  constructor({ storageDirectory, userMusicDirectory }) {
+  constructor({ storageDirectory, userMusicDirectory, logicFactoryVocalDirectory = "/Applications/Logic Pro.app/Contents/Resources/Patches/Audio/04 Voice" }) {
     this.storageDirectory = storageDirectory;
     this.userMusicDirectory = userMusicDirectory;
     this.vocalPresetDirectory = path.join(userMusicDirectory, "Audio Music Apps", "Channel Strip Settings", "Track");
+    this.logicFactoryVocalDirectory = logicFactoryVocalDirectory;
   }
 
   async list() {
     await this.#initialize();
-    const [managedMidi, managedVocal, managedInstrument, installedVocal] = await Promise.all([
+    const [managedMidi, managedVocal, managedInstrument, installedVocal, factoryVocal] = await Promise.all([
       this.#scan(path.join(this.storageDirectory, "midi"), "midi", "Downloaded / generated"),
       this.#scan(path.join(this.storageDirectory, "vocal"), "vocal", "Downloaded"),
       this.#scan(path.join(this.storageDirectory, "instrument"), "instrument", "Downloaded"),
-      this.#scan(this.vocalPresetDirectory, "vocal", "Installed in Logic", true)
+      this.#scan(this.vocalPresetDirectory, "vocal", "Installed in Logic", true),
+      this.#scanFactoryVocalPatches()
     ]);
-    return [...installedVocal, ...managedVocal, ...managedInstrument, ...managedMidi];
+    return [...installedVocal, ...factoryVocal, ...managedVocal, ...managedInstrument, ...managedMidi];
   }
 
   async download({ url, type, license = "Review source license" }) {
@@ -147,8 +149,17 @@ export class SoundLibraryService {
     const items = await this.list();
     const item = items.find((candidate) => candidate.path === filePath && candidate.type === type);
     if (!item) throw new Error("That preset is no longer in the Sounds library.");
-    if (item.extension !== ".cst") throw new Error("Direct loading currently supports Logic channel-strip .cst presets. This preset can still be revealed and installed manually.");
+    if (![".cst", ".patch"].includes(item.extension)) throw new Error("Direct loading currently supports Logic channel-strip .cst presets and factory audio patches.");
     await fs.mkdir(this.vocalPresetDirectory, { recursive: true });
+    if (item.extension === ".patch") {
+      const embeddedPreset = path.join(item.path, "#Root.cst");
+      await fs.access(embeddedPreset);
+      const installDirectory = path.join(this.vocalPresetDirectory, "studio-chat", "Logic Factory Vocals");
+      await fs.mkdir(installDirectory, { recursive: true });
+      const destination = path.join(installDirectory, `${safeFilename(item.name)}.cst`);
+      await fs.copyFile(embeddedPreset, destination);
+      return { path: destination, presetName: item.name, folderNames: ["studio-chat", "Logic Factory Vocals"] };
+    }
     const root = await fs.realpath(this.vocalPresetDirectory);
     const candidate = await fs.realpath(item.path);
     if (candidate.startsWith(`${root}${path.sep}`)) {
@@ -179,6 +190,23 @@ export class SoundLibraryService {
       return [await this.#describe(entryPath, type, source, metadata)];
     }));
     return results.flat();
+  }
+
+  async #scanFactoryVocalPatches() {
+    let entries;
+    try { entries = await fs.readdir(this.logicFactoryVocalDirectory, { withFileTypes: true, recursive: true }); }
+    catch (error) { if (error.code === "ENOENT") return []; throw error; }
+    const patches = [];
+    for (const entry of entries) {
+      if (!entry.isDirectory() || path.extname(entry.name).toLowerCase() !== ".patch") continue;
+      const parentPath = entry.parentPath || entry.path;
+      const patchPath = path.join(parentPath, entry.name);
+      try {
+        await fs.access(path.join(patchPath, "#Root.cst"));
+        patches.push(await this.#describe(patchPath, "vocal", "Logic factory vocals", { license: "Included with Logic Pro" }));
+      } catch { /* skip incomplete patch bundles */ }
+    }
+    return patches;
   }
 
   async #describe(filePath, type, source, metadata = {}) {

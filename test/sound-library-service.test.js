@@ -11,7 +11,7 @@ test("discovers installed vocal presets and generated MIDI", async () => {
   const presetDirectory = path.join(music, "Audio Music Apps", "Channel Strip Settings", "Track", "Vocals");
   await fs.mkdir(presetDirectory, { recursive: true });
   await fs.writeFile(path.join(presetDirectory, "Airy.cst"), "preset");
-  const service = new SoundLibraryService({ storageDirectory: path.join(root, "managed"), userMusicDirectory: music });
+  const service = new SoundLibraryService({ storageDirectory: path.join(root, "managed"), userMusicDirectory: music, logicFactoryVocalDirectory: path.join(root, "missing-factory-library") });
 
   const generated = await service.generateMidi({ root: "C", mode: "minor", progression: "1,6,3,7", bpm: 90, bars: 4 });
   const items = await service.list();
@@ -26,6 +26,27 @@ test("rejects unsupported local files", async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "studio-chat-sounds-"));
   const badFile = path.join(root, "installer.command");
   await fs.writeFile(badFile, "unsafe");
-  const service = new SoundLibraryService({ storageDirectory: path.join(root, "managed"), userMusicDirectory: path.join(root, "Music") });
+  const service = new SoundLibraryService({ storageDirectory: path.join(root, "managed"), userMusicDirectory: path.join(root, "Music"), logicFactoryVocalDirectory: path.join(root, "missing-factory-library") });
   await assert.rejects(() => service.importLocal([badFile], "vocal"), /not a supported/);
+});
+
+test("discovers and prepares Logic factory vocal patches", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "studio-chat-factory-vocals-"));
+  const music = path.join(root, "Music");
+  const factory = path.join(root, "Logic", "04 Voice");
+  const patch = path.join(factory, "Warm Vocal.patch");
+  await fs.mkdir(patch, { recursive: true });
+  await fs.writeFile(path.join(patch, "#Root.cst"), "factory preset");
+  const service = new SoundLibraryService({
+    storageDirectory: path.join(root, "managed"),
+    userMusicDirectory: music,
+    logicFactoryVocalDirectory: factory
+  });
+
+  const item = (await service.list()).find((candidate) => candidate.name === "Warm Vocal");
+  assert.equal(item.source, "Logic factory vocals");
+  const prepared = await service.preparePreset(item.path, "vocal");
+  assert.equal(prepared.presetName, "Warm Vocal");
+  assert.deepEqual(prepared.folderNames, ["studio-chat", "Logic Factory Vocals"]);
+  assert.equal(await fs.readFile(prepared.path, "utf8"), "factory preset");
 });
