@@ -51,3 +51,18 @@ test("discovers and prepares Logic factory vocal patches", async () => {
   assert.deepEqual(prepared.folderNames, ["studio-chat", "Logic Factory Vocals"]);
   assert.equal(await fs.readFile(prepared.path, "utf8"), "factory preset Channel EQ Compressor DeEsser 2 ChromaVerb");
 });
+
+test("installs the complete Logic factory vocal pack in one action", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "studio-chat-vocal-pack-"));
+  const music = path.join(root, "Music");
+  const factory = path.join(root, "Factory");
+  for (const name of ["Warm Lead", "Airy Lead"]) {
+    const patch = path.join(factory, `${name}.patch`);
+    await fs.mkdir(patch, { recursive: true });
+    await fs.writeFile(path.join(patch, "#Root.cst"), `Channel EQ Compressor ${name}`);
+  }
+  const service = new SoundLibraryService({ storageDirectory: path.join(root, "sounds"), userMusicDirectory: music, logicFactoryVocalDirectory: factory });
+  const result = await service.installFactoryVocalPack();
+  assert.equal(result.count, 2);
+  assert.equal(await fs.readFile(path.join(music, "Audio Music Apps", "Channel Strip Settings", "Track", "studio-chat", "Vocal Chains", "Warm Lead.cst"), "utf8"), "Channel EQ Compressor Warm Lead");
+});

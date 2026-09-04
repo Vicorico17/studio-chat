@@ -179,6 +179,27 @@ export class SoundLibraryService {
     return { path: destination, presetName: path.basename(destination, ".cst"), folderNames: ["studio-chat", type === "vocal" ? "Vocal Presets" : "Instrument Presets"] };
   }
 
+  async installFactoryVocalPack() {
+    const factoryPresets = await this.#scanFactoryVocalPatches();
+    if (!factoryPresets.length) throw new Error("Logic's factory vocal presets are not installed. Open Logic Pro > Sound Library Manager and install the Voice content first.");
+    const installDirectory = path.join(this.vocalPresetDirectory, "studio-chat", "Vocal Chains");
+    await fs.mkdir(installDirectory, { recursive: true });
+    const usedNames = new Set();
+    for (const item of factoryPresets) {
+      let baseName = safeFilename(item.name);
+      if (usedNames.has(baseName.toLowerCase())) baseName = `${baseName}-${item.id.slice(0, 6)}`;
+      usedNames.add(baseName.toLowerCase());
+      const destination = path.join(installDirectory, `${baseName}.cst`);
+      await fs.copyFile(path.join(item.path, "#Root.cst"), destination);
+      await fs.writeFile(`${destination}.json`, JSON.stringify({
+        sourceUrl: "Logic Pro factory library",
+        license: "Included with Logic Pro",
+        installedAt: new Date().toISOString()
+      }, null, 2));
+    }
+    return { ok: true, count: factoryPresets.length, folder: installDirectory };
+  }
+
   async #initialize() {
     await Promise.all(Object.keys(ALLOWED).map((type) => fs.mkdir(path.join(this.storageDirectory, type), { recursive: true })));
   }

@@ -54,6 +54,8 @@ const elements = {
   playerCurrentTime: $("#playerCurrentTime"),
   playerDuration: $("#playerDuration"),
   soundsCount: $("#soundsCount"),
+  vocalPackBanner: $("#vocalPackBanner"),
+  installVocalPackButton: $("#installVocalPackButton"),
   soundsSearch: $("#soundsSearch"),
   soundsTrack: $("#soundsTrack"),
   midiBarLabel: $("#midiBarLabel"),
@@ -914,8 +916,26 @@ $$('[data-sounds-tab]').forEach((button) => button.addEventListener("click", () 
   $$('[data-sounds-tab]').forEach((item) => item.classList.toggle("active", item === button));
   elements.midiGeneratorForm.classList.toggle("hidden", soundsTab !== "midi");
   elements.midiBarLabel.classList.toggle("hidden", soundsTab !== "midi");
+  elements.vocalPackBanner.classList.toggle("hidden", soundsTab !== "vocal");
   renderSounds();
 }));
+elements.installVocalPackButton.addEventListener("click", async () => {
+  elements.installVocalPackButton.disabled = true;
+  elements.installVocalPackButton.textContent = "Installing…";
+  showActivity("Installing vocal chains");
+  try {
+    const result = await window.studiochat.installFactoryVocals();
+    await loadSounds("Refreshing installed vocal chains…");
+    elements.installVocalPackButton.textContent = `${result.count} chains installed ✓`;
+    showToast(`${result.count} vocal chains are ready in Logic.`);
+  } catch (error) {
+    elements.installVocalPackButton.textContent = "Try installation again";
+    showToast(error.message, true);
+  } finally {
+    elements.installVocalPackButton.disabled = false;
+    hideActivity();
+  }
+});
 elements.addLocalSoundButton.addEventListener("click", async () => {
   try {
     await window.studiochat.addLocalSounds(soundsTab);

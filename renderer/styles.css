@@ -1146,6 +1146,11 @@ button.album-file-row:hover, .album-file-row.playing { border-color: rgba(155,25
 .sounds-hero, .favorites-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
 .sounds-hero h3 { margin: 6px 0 5px; font-size: 25px; letter-spacing: -.035em; }
 .sounds-hero p, .sounds-status { color: var(--muted); font-size: 10px; }
+.vocal-pack-banner { display: flex; align-items: center; justify-content: space-between; gap: 22px; margin: 16px 0 12px; padding: 17px 18px; border: 1px solid rgba(155,255,110,.28); border-radius: 14px; background: radial-gradient(circle at 90% 10%, rgba(155,255,110,.16), transparent 38%), rgba(155,255,110,.055); }
+.vocal-pack-banner > div { display: grid; gap: 5px; }
+.vocal-pack-banner strong { font-size: 14px; }
+.vocal-pack-banner p { max-width: 590px; color: var(--muted); font-size: 10px; line-height: 1.45; }
+.vocal-pack-banner button { min-width: 190px; min-height: 45px; }
 .sounds-count { padding: 7px 11px; border: 1px solid rgba(106,167,255,.25); border-radius: 999px; color: #a8cbff; font-size: 10px; }
 .sounds-tabs { display: flex; gap: 7px; margin: 18px 0 12px; }
 .sounds-tab { min-height: 38px; padding: 0 16px; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,.03); color: var(--muted); font-size: 11px; font-weight: 700; }

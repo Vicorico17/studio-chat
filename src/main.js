@@ -117,6 +117,7 @@ function registerIPC() {
   });
 
   ipcMain.handle("sounds:list", () => soundLibraryService.list());
+  ipcMain.handle("sounds:install-factory-vocals", () => soundLibraryService.installFactoryVocalPack());
   ipcMain.handle("sounds:download", (_event, value) => soundLibraryService.download(value));
   ipcMain.handle("sounds:generate-midi", (_event, value) => soundLibraryService.generateMidi(value));
   ipcMain.handle("sounds:reveal", async (_event, filePath) => {

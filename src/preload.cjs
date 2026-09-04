@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld("studiochat", {
   getAlbumPreviewUrl: (filePath) => ipcRenderer.invoke("album-library:preview-url", filePath),
   openAlbumFolder: () => ipcRenderer.invoke("album-library:open-folder"),
   listSounds: () => ipcRenderer.invoke("sounds:list"),
+  installFactoryVocals: () => ipcRenderer.invoke("sounds:install-factory-vocals"),
   downloadSound: (value) => ipcRenderer.invoke("sounds:download", value),
   generateMidi: (value) => ipcRenderer.invoke("sounds:generate-midi", value),
   addLocalSounds: (type) => ipcRenderer.invoke("sounds:add-local", type),
