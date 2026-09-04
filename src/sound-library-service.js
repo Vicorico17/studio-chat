@@ -34,7 +34,7 @@ export class SoundLibraryService {
     return [...installedVocal, ...managedVocal, ...managedInstrument, ...managedMidi];
   }
 
-  async download({ url, type }) {
+  async download({ url, type, license = "Review source license" }) {
     if (!ALLOWED[type]) throw new Error("Choose MIDI, Vocal preset, or Instrument preset.");
     const parsed = new URL(url);
     if (parsed.protocol !== "https:") throw new Error("Downloads must use HTTPS.");
@@ -65,7 +65,8 @@ export class SoundLibraryService {
       throw error;
     }
     const digest = crypto.createHash("sha256").update(await fs.readFile(destination)).digest("hex");
-    const metadata = { sourceUrl: parsed.href, license: "Review source license", sha256: digest, downloadedAt: new Date().toISOString() };
+    const licenseLabel = String(license).trim().slice(0, 120) || "Review source license";
+    const metadata = { sourceUrl: parsed.href, license: licenseLabel, sha256: digest, downloadedAt: new Date().toISOString() };
     await fs.writeFile(`${destination}.json`, JSON.stringify(metadata, null, 2));
     return this.#describe(destination, type, "Downloaded", metadata);
   }
