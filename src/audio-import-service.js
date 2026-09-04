@@ -117,17 +117,19 @@ async function createPlayablePreview(permittedPath, { cacheSource }) {
     }
     const container = audioContainerFromHeader(header);
 
-    // A few old lossless exports have an .mp3 suffix even though their bytes
-    // are AIFF. Chromium rejects them, so make a disposable WAV preview while
-    // preserving the original file for Logic and archival use.
+    // Chromium can stop early or report the wrong duration for some downloaded
+    // MP3s, and a few old lossless exports have an .mp3 suffix despite being
+    // AIFF. Normalize both into a disposable WAV preview while preserving the
+    // original file for Logic and archival use.
     const cacheKey = crypto
       .createHash("sha256")
       .update(`${permittedPath}:${stats.size}:${stats.mtimeMs}`)
       .digest("hex")
       .slice(0, 20);
     const cacheDirectory = path.join(os.tmpdir(), "studio-chat-audio-previews");
-    const sourceLink = path.join(cacheDirectory, `${cacheKey}.aiff`);
-    const outputExtension = container === "aiff" ? ".wav" : path.extname(permittedPath).toLowerCase();
+    const needsConversion = container === "aiff" || container === "mp3";
+    const sourceLink = path.join(cacheDirectory, `${cacheKey}${container === "aiff" ? ".aiff" : ".mp3"}`);
+    const outputExtension = needsConversion ? ".wav" : path.extname(permittedPath).toLowerCase();
     const previewPath = path.join(cacheDirectory, `${cacheKey}${outputExtension}`);
     await fs.mkdir(cacheDirectory, { recursive: true });
     try {
@@ -136,7 +138,7 @@ async function createPlayablePreview(permittedPath, { cacheSource }) {
     } catch {
       // Cache miss: conversion happens once per source version.
     }
-    if (container !== "aiff") {
+    if (!needsConversion) {
       if (!cacheSource) return permittedPath;
       const temporaryPreview = `${previewPath}.part-${crypto.randomUUID()}`;
       try {

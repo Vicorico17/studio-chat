@@ -17,8 +17,8 @@ test("recognizes common playable audio headers", () => {
 
 test("copies Plecat audio into a stable local playback cache", async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "studio-chat-preview-test-"));
-  const source = path.join(root, "cloud-beat.mp3");
-  await fs.writeFile(source, Buffer.from("ID3 playable test audio", "ascii"));
+  const source = path.join(root, "cloud-beat.m4a");
+  await fs.writeFile(source, Buffer.from("cached playable test audio", "ascii"));
   const preview = await ensurePlayablePreview(source, { cacheSource: true });
   assert.notEqual(preview, source);
   assert.deepEqual(await fs.readFile(preview), await fs.readFile(source));
